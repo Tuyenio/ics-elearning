@@ -261,13 +261,13 @@ export default function TeacherCertificatesPage() {
     setUseTemplate(template)
     setSelectedExamId("")
     setAssignError(null)
-    // Anchor modal above the 'Sử dụng' button (top of card)
+    // Anchor modal to card
     const card = cardRefs.current[template.id]
     if (card) {
       const rect = card.getBoundingClientRect()
       setAnchorStyle({
         position: "absolute",
-        top: rect.top + window.scrollY - 8,
+        top: rect.bottom + window.scrollY + 8,
         left: rect.left + window.scrollX,
         zIndex: 100,
         width: rect.width,

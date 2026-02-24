@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -261,13 +261,13 @@ export default function TeacherCertificatesPage() {
     setUseTemplate(template)
     setSelectedExamId("")
     setAssignError(null)
-    // Anchor modal above the 'Sử dụng' button (top of card)
+    // Anchor modal to card
     const card = cardRefs.current[template.id]
     if (card) {
       const rect = card.getBoundingClientRect()
       setAnchorStyle({
         position: "absolute",
-        top: rect.top + window.scrollY - 8,
+        top: rect.bottom + window.scrollY + 8,
         left: rect.left + window.scrollX,
         zIndex: 100,
         width: rect.width,
@@ -465,7 +465,7 @@ export default function TeacherCertificatesPage() {
                 <div
                   key={template.id}
                   className="bg-white/90 dark:bg-slate-900/70 border border-border dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:shadow-lg transition-shadow"
-                  ref={el => { cardRefs.current[template.id] = el }}
+                  ref={el => (cardRefs.current[template.id] = el)}
                 >
                   <div className="flex items-start justify-end gap-3">
                     <div>{getStatusBadge(template.status)}</div>
