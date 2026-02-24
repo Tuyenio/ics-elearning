@@ -217,7 +217,6 @@ export default function AdminCertificatesPage() {
       setViewMode("reject")
       setRejectionReason("")
     } else if (action === "approve") {
-      openAnchoredModal(certificateId)
       setApproveTarget(certificate || null)
       setApproveModalOpen(true)
     }
@@ -713,11 +712,11 @@ const formatDate = (date?: string) => {
             setAnchorStyle(null)
           }} />
           <div
-            className="absolute flex flex-row items-center gap-8 bg-card border rounded-2xl shadow-2xl p-8 inline-block"
+            className="absolute flex flex-row items-center gap-8 bg-card border rounded-2xl shadow-2xl p-8 max-w-3xl w-full mx-4"
             style={{
               top: anchorStyle.top,
               left: anchorStyle.left,
-              // Remove width: anchorStyle.width for tight fit
+              width: anchorStyle.width,
             }}
           >
             {/* Certificate Preview */}

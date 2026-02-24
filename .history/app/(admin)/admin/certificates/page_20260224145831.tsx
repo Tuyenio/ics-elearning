@@ -217,7 +217,6 @@ export default function AdminCertificatesPage() {
       setViewMode("reject")
       setRejectionReason("")
     } else if (action === "approve") {
-      openAnchoredModal(certificateId)
       setApproveTarget(certificate || null)
       setApproveModalOpen(true)
     }
@@ -705,25 +704,17 @@ const formatDate = (date?: string) => {
         </div>
       </div>
 
-      {approveModalOpen && approveTarget && anchorStyle && (
-        <div className="fixed inset-0 z-[999]" style={{ pointerEvents: 'auto' }}>
+      {approveModalOpen && approveTarget && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => {
             setApproveModalOpen(false)
             setApproveTarget(null)
-            setAnchorStyle(null)
           }} />
-          <div
-            className="absolute flex flex-row items-center gap-8 bg-card border rounded-2xl shadow-2xl p-8 inline-block"
-            style={{
-              top: anchorStyle.top,
-              left: anchorStyle.left,
-              // Remove width: anchorStyle.width for tight fit
-            }}
-          >
+          <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 bg-card border rounded-2xl shadow-2xl p-8 max-w-3xl w-full mx-4">
             {/* Certificate Preview */}
-            <div className="flex-1 flex flex-col items-center justify-center min-w-[260px]">
+            <div className="flex-1 flex flex-col items-center justify-center">
               <div
-                className="w-full max-w-xs aspect-[3/4] rounded-xl overflow-hidden shadow-lg border relative"
+                className="w-full max-w-xs aspect-[3/4] rounded-xl overflow-hidden shadow-lg border"
                 style={{
                   backgroundColor: approveTarget.backgroundColor || "#243447",
                   backgroundImage: approveTarget.templateImageUrl ? `url(${approveTarget.templateImageUrl})` : "none",
@@ -823,7 +814,6 @@ const formatDate = (date?: string) => {
                   onClick={() => {
                     setApproveModalOpen(false)
                     setApproveTarget(null)
-                    setAnchorStyle(null)
                   }}
                   className="w-full py-3 rounded-lg font-medium border border-border dark:border-slate-800 text-foreground dark:text-white hover:bg-secondary dark:hover:bg-slate-800 text-lg"
                 >
