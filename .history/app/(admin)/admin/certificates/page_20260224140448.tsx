@@ -863,7 +863,22 @@ const formatDate = (date?: string) => {
                     <p className="text-sm font-medium text-foreground dark:text-white">{selectedCertificate.issuedCount} chứng chỉ</p>
                   </div>
                 </div>
-                {/* No approve/reject buttons in detail modal */}
+                {selectedCertificate.status === "pending" && (
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <button
+                      onClick={() => handleAction("approve", selectedCertificate.id, selectedCertificate)}
+                      className="py-2 rounded-lg font-medium flex items-center justify-center gap-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50"
+                    >
+                      <CheckCircle size={16} /> Duyệt chứng chỉ
+                    </button>
+                    <button
+                      onClick={() => handleAction("reject", selectedCertificate.id, selectedCertificate)}
+                      className="py-2 rounded-lg font-medium flex items-center justify-center gap-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
+                    >
+                      <XCircle size={16} /> Từ chối
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

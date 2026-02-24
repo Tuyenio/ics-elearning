@@ -730,13 +730,6 @@ const formatDate = (date?: string) => {
           >
             <div className="bg-card border rounded-2xl shadow-2xl p-5">
               <div className="space-y-5">
-                <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
-                  <p className="text-muted-foreground dark:text-slate-400 text-sm mb-1">Chứng chỉ</p>
-                  <p className="text-foreground dark:text-white font-medium">{approveTarget?.title}</p>
-                  <p className="text-muted-foreground dark:text-slate-400 text-xs mt-1">
-                    Khóa học: {approveTarget?.course?.title || "—"}
-                  </p>
-                </div>
                 <div>
                   <label className="block text-foreground dark:text-white text-sm font-semibold mb-2">
                     Chọn bài thi thật <span className="text-red-500">*</span>
@@ -787,7 +780,7 @@ const formatDate = (date?: string) => {
         </div>
       )}
 
-      {selectedCertificate && viewMode === null && viewDetailModalOpen && anchorStyle && (
+      {selectedCertificate && anchorStyle && (
         <div className="fixed inset-0 z-[999]" style={{ pointerEvents: 'auto' }}>
           <div className="absolute inset-0 bg-black/30" onClick={() => {
             setViewDetailModalOpen(false)
@@ -863,7 +856,16 @@ const formatDate = (date?: string) => {
                     <p className="text-sm font-medium text-foreground dark:text-white">{selectedCertificate.issuedCount} chứng chỉ</p>
                   </div>
                 </div>
-                {/* No approve/reject buttons in detail modal */}
+                {selectedCertificate.status === "pending" && (
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <button
+                      onClick={() => handleAction("reject", selectedCertificate.id, selectedCertificate)}
+                      className="py-2 rounded-lg font-medium flex items-center justify-center gap-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
+                    >
+                      <XCircle size={16} /> Từ chối
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -503,7 +503,11 @@ const formatDate = (date?: string) => {
                           {openMenu === cert.id && (
                             <div className="absolute right-0 top-full mt-2 bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-lg shadow-lg z-30 min-w-48">
                               <button
-                                onClick={() => handleAction("view", cert.id, cert)}
+                                onClick={() => {
+                                  setSelectedCertificate(cert)
+                                  setViewMode(viewMode === "view" && selectedCertificate?.id === cert.id ? null : "view")
+                                  setOpenMenu(null)
+                                }}
                                 className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-foreground dark:text-white"
                               >
                                 <Eye size={16} /> Xem chi tiết
@@ -863,7 +867,22 @@ const formatDate = (date?: string) => {
                     <p className="text-sm font-medium text-foreground dark:text-white">{selectedCertificate.issuedCount} chứng chỉ</p>
                   </div>
                 </div>
-                {/* No approve/reject buttons in detail modal */}
+                {selectedCertificate.status === "pending" && (
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <button
+                      onClick={() => handleAction("approve", selectedCertificate.id, selectedCertificate)}
+                      className="py-2 rounded-lg font-medium flex items-center justify-center gap-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50"
+                    >
+                      <CheckCircle size={16} /> Duyệt chứng chỉ
+                    </button>
+                    <button
+                      onClick={() => handleAction("reject", selectedCertificate.id, selectedCertificate)}
+                      className="py-2 rounded-lg font-medium flex items-center justify-center gap-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
+                    >
+                      <XCircle size={16} /> Từ chối
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

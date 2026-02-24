@@ -309,31 +309,31 @@ const formatDate = (date?: string) => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "approved":
-        return [
-          <span key="approved" className="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-fit bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+        return (
+          <span className="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-fit bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
             <CheckCircle size={14} /> Đã duyệt
           </span>
-        ];
+        )
       case "pending":
-        return [
-          <span key="pending" className="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-fit bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400">
+        return (
+          <span className="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-fit bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400">
             <Clock size={14} /> Chờ duyệt
           </span>
-        ];
+        )
       case "rejected":
-        return [
-          <span key="rejected" className="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-fit bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+        return (
+          <span className="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-fit bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
             <XCircle size={14} /> Từ chối
           </span>
-        ];
+        )
       case "draft":
-        return [
-          <span key="draft" className="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-fit bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-400">
+        return (
+          <span className="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-fit bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-400">
             <Clock size={14} /> Nháp
           </span>
-        ];
+        )
       default:
-        return null;
+        return null
     }
   }
 
@@ -503,7 +503,11 @@ const formatDate = (date?: string) => {
                           {openMenu === cert.id && (
                             <div className="absolute right-0 top-full mt-2 bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-lg shadow-lg z-30 min-w-48">
                               <button
-                                onClick={() => handleAction("view", cert.id, cert)}
+                                onClick={() => {
+                                  setSelectedCertificate(cert)
+                                  setViewMode(viewMode === "view" && selectedCertificate?.id === cert.id ? null : "view")
+                                  setOpenMenu(null)
+                                }}
                                 className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-foreground dark:text-white"
                               >
                                 <Eye size={16} /> Xem chi tiết
@@ -658,6 +662,134 @@ const formatDate = (date?: string) => {
                           </button>
                         </div>
                       )}
+
+                      {selectedCertificate?.id === cert.id && viewMode === "view" && (
+                        <div className="mt-4 border border-border dark:border-slate-800 rounded-xl p-4 bg-secondary/40 dark:bg-slate-800/40 space-y-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <h4 className="text-base font-semibold text-foreground dark:text-white">Chi tiết chứng chỉ</h4>
+                              <p className="text-xs text-muted-foreground dark:text-slate-400 mt-1">
+                                Xem nhanh thông tin của mẫu chứng chỉ này
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => {
+                                setViewMode(null)
+                                setSelectedCertificate(null)
+                              }}
+                              className="p-2 rounded-lg hover:bg-secondary dark:hover:bg-slate-800"
+                            >
+                              <X size={16} className="text-muted-foreground" />
+                            </button>
+                          </div>
+                          {cert.status === "rejected" && cert.rejectionReason && (
+                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3">
+                              <div className="flex items-center gap-2 text-red-700 dark:text-red-400 mb-1">
+                                <AlertCircle size={16} />
+                                <span className="font-semibold text-sm">Lý do từ chối</span>
+                              </div>
+                              <p className="text-red-600 dark:text-red-300 text-sm">{cert.rejectionReason}</p>
+                            </div>
+                          )}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="bg-card dark:bg-slate-900/60 rounded-xl p-3">
+                              <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
+                                <BookOpen size={14} />
+                                <span className="text-xs">Khóa học</span>
+                              </div>
+                              <p className="text-sm font-medium text-foreground dark:text-white">{cert.course?.title || "—"}</p>
+                            </div>
+                            <div className="bg-card dark:bg-slate-900/60 rounded-xl p-3">
+                              <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
+                                <User size={14} />
+                                <span className="text-xs">Giảng viên</span>
+                              </div>
+                              <p className="text-sm font-medium text-foreground dark:text-white">{cert.teacher?.name || "—"}</p>
+                              <p className="text-xs text-muted-foreground dark:text-slate-400">{cert.teacher?.email || "—"}</p>
+                            </div>
+                            <div className="bg-card dark:bg-slate-900/60 rounded-xl p-3">
+                              <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
+                                <Calendar size={14} />
+                                <span className="text-xs">Thời hạn hiệu lực</span>
+                              </div>
+                              <p className="text-sm font-medium text-foreground dark:text-white">{cert.validityPeriod}</p>
+                            </div>
+                            <div className="bg-card dark:bg-slate-900/60 rounded-xl p-3">
+                              <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
+                                <Download size={14} />
+                                <span className="text-xs">Số lượng đã cấp</span>
+                              </div>
+                              <p className="text-sm font-medium text-foreground dark:text-white">{cert.issuedCount} chứng chỉ</p>
+                            </div>
+                          </div>
+                          {cert.status === "pending" && (
+                            <div className="grid grid-cols-2 gap-2 pt-1">
+                              <button
+                                onClick={() => handleAction("approve", cert.id, cert)}
+                                className="py-2 rounded-lg font-medium flex items-center justify-center gap-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50"
+                              >
+                                <CheckCircle size={16} /> Duyệt chứng chỉ
+                              </button>
+                              <button
+                                onClick={() => handleAction("reject", cert.id, cert)}
+                                className="py-2 rounded-lg font-medium flex items-center justify-center gap-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
+                              >
+                                <XCircle size={16} /> Từ chối
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {selectedCertificate?.id === cert.id && viewMode === "reject" && (
+                        <div className="mt-4 border border-red-200 dark:border-red-800 rounded-xl p-4 bg-red-50/70 dark:bg-red-900/10 space-y-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <h4 className="text-base font-semibold text-red-700 dark:text-red-400">Từ chối chứng chỉ</h4>
+                              <p className="text-xs text-muted-foreground dark:text-slate-400 mt-1">
+                                Nhập lý do để giảng viên nhận được phản hồi rõ ràng
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => {
+                                setViewMode(null)
+                                setSelectedCertificate(null)
+                                setRejectionReason("")
+                              }}
+                              className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/20"
+                            >
+                              <X size={16} className="text-muted-foreground" />
+                            </button>
+                          </div>
+                          <textarea
+                            value={rejectionReason}
+                            onChange={(e) => setRejectionReason(e.target.value)}
+                            placeholder="Nhập lý do từ chối chứng chỉ này..."
+                            className="w-full bg-background dark:bg-slate-950 text-foreground dark:text-white rounded-lg px-4 py-3 border border-border dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500 h-28 resize-none"
+                          />
+                          <p className="text-xs text-muted-foreground dark:text-slate-500">
+                            Lý do này sẽ được gửi đến email của giảng viên.
+                          </p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <button
+                              onClick={() => {
+                                setViewMode(null)
+                                setSelectedCertificate(null)
+                                setRejectionReason("")
+                              }}
+                              className="py-2 rounded-lg font-medium border border-border dark:border-slate-800 text-foreground dark:text-white hover:bg-secondary dark:hover:bg-slate-800"
+                            >
+                              Quay lại
+                            </button>
+                            <button
+                              onClick={handleReject}
+                              disabled={!rejectionReason.trim()}
+                              className="py-2 rounded-lg font-medium flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <XCircle size={16} /> Xác nhận từ chối
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -703,6 +835,7 @@ const formatDate = (date?: string) => {
               </table>
             </div>
           )}
+
           {!isLoading && viewTab === "issued" && filteredIssuedCertificates.length === 0 && (
             <div className="py-12 text-center">
               <Award size={48} className="mx-auto mb-4 text-muted-foreground opacity-50" />
@@ -802,8 +935,8 @@ const formatDate = (date?: string) => {
               width: anchorStyle.width,
             }}
           >
-            {/* Detail content (reuse from card) */}
             <div className="bg-card border rounded-2xl shadow-2xl p-5">
+              {/* Detail content (reuse from card) */}
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -863,7 +996,22 @@ const formatDate = (date?: string) => {
                     <p className="text-sm font-medium text-foreground dark:text-white">{selectedCertificate.issuedCount} chứng chỉ</p>
                   </div>
                 </div>
-                {/* No approve/reject buttons in detail modal */}
+                {selectedCertificate.status === "pending" && (
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <button
+                      onClick={() => handleAction("approve", selectedCertificate.id, selectedCertificate)}
+                      className="py-2 rounded-lg font-medium flex items-center justify-center gap-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50"
+                    >
+                      <CheckCircle size={16} /> Duyệt chứng chỉ
+                    </button>
+                    <button
+                      onClick={() => handleAction("reject", selectedCertificate.id, selectedCertificate)}
+                      className="py-2 rounded-lg font-medium flex items-center justify-center gap-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
+                    >
+                      <XCircle size={16} /> Từ chối
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
