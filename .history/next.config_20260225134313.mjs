@@ -1,4 +1,7 @@
-/** @type {import('next').NextConfig} */
+/**
+ * Next.js rewrite: map all frontend requests to /api/* on backend
+ * Example: /system-settings → http://localhost:5001/api/system-settings
+ */
 const nextConfig = {
   async rewrites() {
     return [
@@ -8,6 +11,11 @@ const nextConfig = {
       },
     ]
   },
+}
+
+export default nextConfig;
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -31,6 +39,8 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
+  // Enable compression
+  compress: true,
   // Remove powered by header for security
   poweredByHeader: false,
   // Enable strict mode for better performance

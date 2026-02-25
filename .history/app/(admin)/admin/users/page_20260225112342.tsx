@@ -2,20 +2,22 @@
 import { useRef } from "react"
 // DropdownFilter: custom dropdown with slide-down effect
 type DropdownOption = { value: string; label: string }
-type DropdownFilterProps = {
+
+interface DropdownFilterProps {
   options: DropdownOption[]
   value: string
   onChange: (value: string) => void
   className?: string
   width?: number
 }
+
 function DropdownFilter({ options, value, onChange, className = "", width = 180 }: DropdownFilterProps) {
   const [open, setOpen] = useState(false)
-  const ref = useRef(null)
+  const ref = useRef<HTMLDivElement>(null)
   // Close dropdown when click outside
   useEffect(() => {
-    function handle(e: MouseEvent) {
-      if (ref.current && !(ref.current as HTMLElement).contains(e.target as Node)) setOpen(false)
+    function handle(e: { target: any; }) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
     }
     if (open) document.addEventListener("mousedown", handle)
     return () => document.removeEventListener("mousedown", handle)
@@ -161,21 +163,6 @@ import { toast } from "sonner"
 //     bio: "Mới bắt đầu học lập trình.",
 //   },
 // ]
-
-// InfoRow component for displaying label-value pairs in mobile card view
-type InfoRowProps = {
-  label: string
-  value: React.ReactNode
-  highlight?: boolean
-}
-function InfoRow({ label, value, highlight = false }: InfoRowProps) {
-  return (
-    <div className="flex justify-between items-center">
-      <span className="text-muted-foreground">{label}</span>
-      <span className={highlight ? "font-semibold text-primary dark:text-accent" : "font-medium text-foreground dark:text-white"}>{value}</span>
-    </div>
-  )
-}
 
 export default function AdminUsersPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -508,7 +495,7 @@ const formatDate = (dateString?: string) => {
                 { value: "admin", label: "Quản trị viên" },
               ]}
               value={selectedRole}
-              onChange={(v: string) => setSelectedRole(v as "all" | "student" | "teacher" | "admin")}
+              onChange={(v: string | ((prevState: "all" | "student" | "teacher" | "admin") => "all" | "student" | "teacher" | "admin")) => setSelectedRole(v as "all" | "student" | "teacher" | "admin")}
               width={160}
             />
             <DropdownFilter
@@ -525,11 +512,10 @@ const formatDate = (dateString?: string) => {
           </div>
         </div>
 
-        {/* ===== DESKTOP TABLE ===== */}
-        <div className="hidden lg:block bg-white/80 dark:bg-slate-900/70 backdrop-blur-md border border-border dark:border-slate-800 rounded-2xl overflow-hidden animate-slideUp" style={{ animationDelay: "0.2s" }}>
+        {/* Users Table */}
+        <div className="bg-white/80 dark:bg-slate-900/70 backdrop-blur-md border border-border dark:border-slate-800 rounded-2xl overflow-hidden animate-slideUp" style={{ animationDelay: "0.2s" }}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              {/* TOÀN BỘ TABLE CŨ GIỮ NGUYÊN */}
               <thead>
                 <tr className="border-b border-border dark:border-slate-800 bg-white/50 dark:bg-slate-800/50">
                   <th className="text-left py-4 px-6 font-semibold text-foreground dark:text-white">Người dùng</th>
@@ -687,86 +673,6 @@ const formatDate = (dateString?: string) => {
               <p className="text-muted-foreground dark:text-slate-400">Không tìm thấy người dùng nào</p>
             </div>
           )}
-        </div>
-
-        {/* ===== MOBILE / TABLET CARD VIEW ===== */}
-        <div className="lg:hidden space-y-4">
-          {filteredUsers.map((user) => (
-            <div
-              key={user.id}
-              className="bg-white/80 dark:bg-slate-900/70 border border-border dark:border-slate-800 rounded-2xl p-4 shadow-sm"
-            >
-              {/* Avatar + Name */}
-              <div className="flex flex-col items-center text-center gap-2 mb-4">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-lg">
-                  {user.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                    .substring(0, 2)
-                    .toUpperCase()}
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground dark:text-white">
-                    {user.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {user.email}
-                  </p>
-                </div>
-              </div>
-
-              {/* Info rows */}
-              <div className="space-y-2 text-sm">
-                <InfoRow label="Số điện thoại" value={user.phone || "Chưa cập nhật"} />
-                <InfoRow
-                  label="Vai trò"
-                  value={
-                    user.role === "admin"
-                      ? "Quản trị viên"
-                      : user.role === "teacher"
-                      ? "Giảng viên"
-                      : "Học viên"
-                  }
-                />
-                <InfoRow label="Khóa học" value={user.courses || "Chưa cập nhật"} />
-                <InfoRow
-                  label="Ngày tham gia"
-                  value={user.createdAt ? formatDate(user.createdAt) : "Chưa cập nhật"}
-                />
-                <InfoRow
-                  label="Trạng thái"
-                  value={
-                    user.status === "active"
-                      ? "Hoạt động"
-                      : user.status === "pending"
-                      ? "Chờ xác thực"
-                      : "Vô hiệu hóa"
-                  }
-                  highlight
-                />
-              </div>
-
-              {/* Actions */}
-              <div className="flex justify-center gap-3 mt-4">
-                <button
-                  onClick={() => setViewUser(user)}
-                  className="px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium"
-                >
-                  Xem
-                </button>
-                <button
-                  onClick={() => {
-                    setEditUser(user)
-                    setIsEditUserOpen(true)
-                  }}
-                  className="px-4 py-2 rounded-lg bg-secondary text-sm font-medium"
-                >
-                  Sửa
-                </button>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
 

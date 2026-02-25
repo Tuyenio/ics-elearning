@@ -30,7 +30,9 @@ const nextConfig = {
   },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
-  },
+  }
+
+  export default nextConfig;
   // Remove powered by header for security
   poweredByHeader: false,
   // Enable strict mode for better performance

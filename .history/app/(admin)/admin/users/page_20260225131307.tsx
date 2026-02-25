@@ -17,139 +17,264 @@ function DropdownFilter({ options, value, onChange, className = "", width = 180 
     function handle(e: MouseEvent) {
       if (ref.current && !(ref.current as HTMLElement).contains(e.target as Node)) setOpen(false)
     }
-    if (open) document.addEventListener("mousedown", handle)
-    return () => document.removeEventListener("mousedown", handle)
-  }, [open])
-  const selected = options.find(o => o.value === value)
-  return (
-    <div ref={ref} className={`relative ${className}`} style={{ minWidth: width }}>
-      <button
-        type="button"
-        className={`w-full flex items-center justify-between px-4 py-2 rounded-xl font-medium text-sm filter-select bg-opacity-90 border transition-all duration-200 shadow-sm ${open ? "ring-2 ring-primary" : ""}`}
-        onClick={() => setOpen(v => !v)}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-      >
-        <span>{selected?.label || "Chọn"}</span>
-        <svg className={`ml-2 w-4 h-4 transition-transform duration-200 ${open ? "rotate-180" : "rotate-0"}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
-      </button>
-      <div
-        className={`absolute left-0 mt-2 w-full z-20 rounded-xl shadow-lg bg-card dark:bg-[#181f2a] border border-border dark:border-slate-700 overflow-hidden transition-all duration-200 ${open ? "max-h-60 opacity-100 scale-100" : "max-h-0 opacity-0 scale-95 pointer-events-none"}`}
-        style={{ boxShadow: open ? "0 8px 32px 0 rgba(0,0,0,0.12)" : undefined }}
-      >
-        <ul className="divide-y divide-border dark:divide-slate-800" role="listbox">
-          {options.map(opt => (
-            <li
-              key={opt.value}
-              className={`px-4 py-2 cursor-pointer text-sm select-none transition-colors duration-150 ${value === opt.value ? "bg-primary/90 text-white dark:bg-accent" : "hover:bg-primary/10 dark:hover:bg-slate-800 text-foreground dark:text-white"}`}
-              onClick={() => { onChange(opt.value); setOpen(false) }}
-              role="option"
-              aria-selected={value === opt.value}
-            >
-              {opt.label}
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  )
-}
-
-import {
-  Search,
-  MoreVertical,
-  Lock,
-  Unlock,
-  Trash2,
-  Plus,
-  Eye,
-  X,
-  Mail,
-  Phone,
-  Calendar,
-  BookOpen,
-  Award,
-  Clock,
-  User,
-  Users,
-} from "lucide-react"
-import { useState, useEffect } from "react"
-import { AddUserModal, ConfirmDialog } from "@/components/ui/admin-modals"
-import { EditUserModal } from "@/components/ui/edit-user-modal"
-import type { UserData, UpdateUserData } from "@/app/types/user"
-import { toast } from "sonner"
-
-// const users: UserData[] = [
-//   {
-//     id: 1,
-//     name: "Trần Văn A",
-//     email: "tran.van.a@example.com",
-//     phone: "0912345678",
-//     role: "student",
-//     courses: 5,
-//     joinDate: "2024-12-01",
-//     status: "active",
-//     completedCourses: 3,
-//     certificates: 2,
-//     totalHours: 45,
-//     lastActive: "2025-01-15",
-//     address: "Quận 1, TP. Hồ Chí Minh",
-//     bio: "Sinh viên năm 3 ngành CNTT, đam mê lập trình web.",
-//   },
-//   {
-//     id: 2,
-//     name: "Nguyễn Thị B",
-//     email: "nguyen.thi.b@example.com",
-//     phone: "0923456789",
-//     role: "teacher",
-//     courses: 3,
-//     joinDate: "2024-11-15",
-//     status: "active",
-//     completedCourses: 0,
-//     certificates: 5,
-//     totalHours: 120,
-//     lastActive: "2025-01-16",
-//     address: "Quận 7, TP. Hồ Chí Minh",
-//     bio: "Chuyên gia React và Next.js với 5 năm kinh nghiệm.",
-//   },
-//   {
-//     id: 3,
-//     name: "Lê Minh C",
-//     email: "le.minh.c@example.com",
-//     phone: "0934567890",
-//     role: "student",
-//     courses: 2,
-//     joinDate: "2024-10-20",
-//     status: "active",
-//     completedCourses: 1,
-//     certificates: 1,
-//     totalHours: 20,
-//     lastActive: "2025-01-14",
-//     address: "Quận Bình Thạnh, TP. Hồ Chí Minh",
-//     bio: "Đang học chuyển ngành sang IT.",
-//   },
-//   {
-//     id: 4,
-//     name: "Phạm Quốc D",
-//     email: "pham.quoc.d@example.com",
-//     phone: "0945678901",
-//     role: "teacher",
-//     courses: 4,
-//     joinDate: "2024-09-10",
-//     status: "inactive",
-//     completedCourses: 0,
-//     certificates: 8,
-//     totalHours: 200,
-//     lastActive: "2024-12-20",
-//     address: "Quận 3, TP. Hồ Chí Minh",
-//     bio: "Giảng viên UI/UX Design với 10 năm kinh nghiệm.",
-//   },
-//   {
-//     id: 5,
-//     name: "Hoàng Thị E",
-//     email: "hoang.thi.e@example.com",
-//     phone: "0956789012",
-//     role: "student",
+                {filteredUsers.map((user) => (
+                  <>
+                    {/* MOBILE CARD: chỉ hiện trên mobile */}
+                    <tr key={user.id + '-mobile'} className="md:hidden">
+                      <td colSpan={7} className="p-0 !bg-transparent">
+                        <div className="flex justify-center items-center w-full py-2">
+                          <div className="max-w-xs w-full mx-auto bg-white dark:bg-slate-900 rounded-2xl shadow border border-border dark:border-slate-800 overflow-hidden flex flex-col items-center">
+                            <div className="flex items-center gap-3 px-4 pt-4 pb-2 w-full">
+                              <div className="relative w-10 h-10 flex-shrink-0">
+                                {user.avatar && !user.avatar.includes('ui-avatars.com') ? (
+                                  <img
+                                    src={user.avatar}
+                                    alt={user.name}
+                                    className="w-10 h-10 rounded-full object-cover border-2 border-primary/20"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = 'none';
+                                      const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                                      if (fallback) fallback.style.display = 'flex';
+                                    }}
+                                  />
+                                ) : null}
+                                <div 
+                                  className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold"
+                                  style={{
+                                    display: user.avatar && !user.avatar.includes('ui-avatars.com') ? 'none' : 'flex'
+                                  }}
+                                >
+                                  {user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                                </div>
+                              </div>
+                              <div>
+                                <div className="font-medium text-foreground dark:text-white">{user.name}</div>
+                                <div className="text-xs text-muted-foreground dark:text-slate-400">{user.email}</div>
+                              </div>
+                            </div>
+                            <div className="divide-y divide-border dark:divide-slate-800 w-full">
+                              <div className="flex justify-between items-center px-4 py-2 text-sm">
+                                <span className="font-semibold text-muted-foreground">Số điện thoại</span>
+                                <span className="text-foreground dark:text-white">{user.phone || "Chưa cập nhật"}</span>
+                              </div>
+                              <div className="flex justify-between items-center px-4 py-2 text-sm">
+                                <span className="font-semibold text-muted-foreground">Vai trò</span>
+                                <span className="text-foreground dark:text-white">{user.role === "admin" ? "Quản trị viên" : user.role === "teacher" ? "Giảng viên" : "Học viên"}</span>
+                              </div>
+                              <div className="flex justify-between items-center px-4 py-2 text-sm">
+                                <span className="font-semibold text-muted-foreground">Khóa học</span>
+                                <span className="text-foreground dark:text-white">{user.courses || "Chưa cập nhật"}</span>
+                              </div>
+                              <div className="flex justify-between items-center px-4 py-2 text-sm">
+                                <span className="font-semibold text-muted-foreground">Ngày tham gia</span>
+                                <span className="text-foreground dark:text-white">{user.createdAt ? formatDate(user.createdAt) : "Chưa cập nhật"}</span>
+                              </div>
+                              <div className="flex justify-between items-center px-4 py-2 text-sm">
+                                <span className="font-semibold text-muted-foreground">Trạng thái</span>
+                                <span className={`px-3 py-1.5 rounded-full text-xs font-semibold inline-flex items-center gap-1.5 ${
+                                  user.status === "active"
+                                    ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                                    : user.status === "pending"
+                                    ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
+                                    : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
+                                }`}>
+                                  <span className={`w-1.5 h-1.5 rounded-full ${
+                                    user.status === "active" ? "bg-emerald-500" : user.status === "pending" ? "bg-amber-500" : "bg-red-500"
+                                  }`} />
+                                  {user.status === "active" ? "Hoạt động" : user.status === "pending" ? "Chờ xác thực" : "Vô hiệu hóa"}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex justify-end px-4 py-2 w-full">
+                              <button
+                                onClick={() => setOpenMenu(openMenu === user.id ? null : user.id)}
+                                className="p-2 hover:bg-secondary dark:hover:bg-slate-800 rounded-lg transition-smooth"
+                              >
+                                <MoreVertical size={18} className="text-muted-foreground dark:text-slate-400" />
+                              </button>
+                              {openMenu === user.id && (
+                                <div className="absolute right-4 top-full mt-2 bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-lg shadow-lg z-10 min-w-48">
+                                  {/* Xem chi tiết */}
+                                  <button
+                                    onClick={() => {
+                                      setViewUser(user)
+                                      setOpenMenu(null)
+                                    }}
+                                    className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-foreground dark:text-white"
+                                  >
+                                    <Eye size={16} /> Xem chi tiết
+                                  </button>
+                                  {/* Sửa thông tin */}
+                                  <button
+                                    onClick={() => {
+                                      setEditUser(user)
+                                      setIsEditUserOpen(true)
+                                      setOpenMenu(null)
+                                    }}
+                                    className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-foreground dark:text-white"
+                                  >
+                                    ✏️ Sửa thông tin
+                                  </button>
+                                  {/* Khóa / Mở */}
+                                  <button
+                                    onClick={() =>
+                                      handleUserAction(user.status === "active" ? "lock" : "unlock", user.id)
+                                    }
+                                    className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-foreground dark:text-white"
+                                  >
+                                    {user.status === "active" ? (
+                                      <>
+                                        <Lock size={16} /> Khóa tài khoản
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Unlock size={16} /> Mở khóa tài khoản
+                                      </>
+                                    )}
+                                  </button>
+                                  {/* Xóa */}
+                                  <button
+                                    onClick={() => handleUserAction("delete", user.id)}
+                                    className="w-full text-left px-4 py-2 hover:bg-destructive/10 dark:hover:bg-destructive/20 flex items-center gap-2 text-destructive"
+                                  >
+                                    <Trash2 size={16} /> Xóa tài khoản
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    {/* DESKTOP ROW: chỉ hiện trên md trở lên */}
+                    <tr key={user.id} className="hidden md:table-row border-b border-border dark:border-slate-800 hover:bg-white/60 dark:hover:bg-slate-800/60 transition-all duration-300">
+                      {/* ...existing code... (giữ nguyên các <td> như cũ cho desktop) */}
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-3">
+                          <div className="relative w-10 h-10 flex-shrink-0">
+                            {user.avatar && !user.avatar.includes('ui-avatars.com') ? (
+                              <img
+                                src={user.avatar}
+                                alt={user.name}
+                                className="w-10 h-10 rounded-full object-cover border-2 border-primary/20"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                                  if (fallback) fallback.style.display = 'flex';
+                                }}
+                              />
+                            ) : null}
+                            <div 
+                              className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold"
+                              style={{
+                                display: user.avatar && !user.avatar.includes('ui-avatars.com') ? 'none' : 'flex'
+                              }}
+                            >
+                              {user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-foreground dark:text-white font-medium">{user.name}</p>
+                            <p className="text-muted-foreground dark:text-slate-400 text-xs">{user.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400">
+                          <Phone size={14} />
+                          <span>{user.phone || "Chưa cập nhật"}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            user.role === "admin"
+                              ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400"
+                              : user.role === "teacher"
+                              ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                              : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                          }`}
+                        >
+                          {user.role === "admin" ? "Quản trị viên" : user.role === "teacher" ? "Giảng viên" : "Học viên"}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 text-foreground dark:text-white">{user.courses || "Chưa cập nhật"}</td>
+                      <td className="py-4 px-6 text-muted-foreground dark:text-slate-400">{user.createdAt ? formatDate(user.createdAt) : "Chưa cập nhật"}</td>
+                      <td className="py-4 px-6">
+                        <span
+                          className={`px-3 py-1.5 rounded-full text-xs font-semibold inline-flex items-center gap-1.5 ${
+                            user.status === "active"
+                              ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                              : user.status === "pending"
+                              ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
+                              : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
+                          }`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            user.status === "active" ? "bg-emerald-500" : user.status === "pending" ? "bg-amber-500" : "bg-red-500"
+                          }`} />
+                          {user.status === "active" ? "Hoạt động" : user.status === "pending" ? "Chờ xác thực" : "Vô hiệu hóa"}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 relative">
+                        <button
+                          onClick={() => setOpenMenu(openMenu === user.id ? null : user.id)}
+                          className="p-2 hover:bg-secondary dark:hover:bg-slate-800 rounded-lg transition-smooth"
+                        >
+                          <MoreVertical size={18} className="text-muted-foreground dark:text-slate-400" />
+                        </button>
+                        {openMenu === user.id && (
+                          <div className="absolute right-0 top-full mt-2 bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-lg shadow-lg z-10 min-w-48">
+                            {/* Xem chi tiết */}
+                            <button
+                              onClick={() => {
+                                setViewUser(user)
+                                setOpenMenu(null)
+                              }}
+                              className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-foreground dark:text-white"
+                            >
+                              <Eye size={16} /> Xem chi tiết
+                            </button>
+                            {/* Sửa thông tin */}
+                            <button
+                              onClick={() => {
+                                setEditUser(user)
+                                setIsEditUserOpen(true)
+                                setOpenMenu(null)
+                              }}
+                              className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-foreground dark:text-white"
+                            >
+                              ✏️ Sửa thông tin
+                            </button>
+                            {/* Khóa / Mở */}
+                            <button
+                              onClick={() =>
+                                handleUserAction(user.status === "active" ? "lock" : "unlock", user.id)
+                              }
+                              className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-foreground dark:text-white"
+                            >
+                              {user.status === "active" ? (
+                                <>
+                                  <Lock size={16} /> Khóa tài khoản
+                                </>
+                              ) : (
+                                <>
+                                  <Unlock size={16} /> Mở khóa tài khoản
+                                </>
+                              )}
+                            </button>
+                            {/* Xóa */}
+                            <button
+                              onClick={() => handleUserAction("delete", user.id)}
+                              className="w-full text-left px-4 py-2 hover:bg-destructive/10 dark:hover:bg-destructive/20 flex items-center gap-2 text-destructive"
+                            >
+                              <Trash2 size={16} /> Xóa tài khoản
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  </>
 //     courses: 1,
 //     joinDate: "2025-01-05",
 //     status: "active",
@@ -161,21 +286,6 @@ import { toast } from "sonner"
 //     bio: "Mới bắt đầu học lập trình.",
 //   },
 // ]
-
-// InfoRow component for displaying label-value pairs in mobile card view
-type InfoRowProps = {
-  label: string
-  value: React.ReactNode
-  highlight?: boolean
-}
-function InfoRow({ label, value, highlight = false }: InfoRowProps) {
-  return (
-    <div className="flex justify-between items-center">
-      <span className="text-muted-foreground">{label}</span>
-      <span className={highlight ? "font-semibold text-primary dark:text-accent" : "font-medium text-foreground dark:text-white"}>{value}</span>
-    </div>
-  )
-}
 
 export default function AdminUsersPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -525,11 +635,10 @@ const formatDate = (dateString?: string) => {
           </div>
         </div>
 
-        {/* ===== DESKTOP TABLE ===== */}
-        <div className="hidden lg:block bg-white/80 dark:bg-slate-900/70 backdrop-blur-md border border-border dark:border-slate-800 rounded-2xl overflow-hidden animate-slideUp" style={{ animationDelay: "0.2s" }}>
+        {/* Users Table */}
+        <div className="bg-white/80 dark:bg-slate-900/70 backdrop-blur-md border border-border dark:border-slate-800 rounded-2xl overflow-hidden animate-slideUp" style={{ animationDelay: "0.2s" }}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              {/* TOÀN BỘ TABLE CŨ GIỮ NGUYÊN */}
               <thead>
                 <tr className="border-b border-border dark:border-slate-800 bg-white/50 dark:bg-slate-800/50">
                   <th className="text-left py-4 px-6 font-semibold text-foreground dark:text-white">Người dùng</th>
@@ -687,86 +796,6 @@ const formatDate = (dateString?: string) => {
               <p className="text-muted-foreground dark:text-slate-400">Không tìm thấy người dùng nào</p>
             </div>
           )}
-        </div>
-
-        {/* ===== MOBILE / TABLET CARD VIEW ===== */}
-        <div className="lg:hidden space-y-4">
-          {filteredUsers.map((user) => (
-            <div
-              key={user.id}
-              className="bg-white/80 dark:bg-slate-900/70 border border-border dark:border-slate-800 rounded-2xl p-4 shadow-sm"
-            >
-              {/* Avatar + Name */}
-              <div className="flex flex-col items-center text-center gap-2 mb-4">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-lg">
-                  {user.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                    .substring(0, 2)
-                    .toUpperCase()}
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground dark:text-white">
-                    {user.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {user.email}
-                  </p>
-                </div>
-              </div>
-
-              {/* Info rows */}
-              <div className="space-y-2 text-sm">
-                <InfoRow label="Số điện thoại" value={user.phone || "Chưa cập nhật"} />
-                <InfoRow
-                  label="Vai trò"
-                  value={
-                    user.role === "admin"
-                      ? "Quản trị viên"
-                      : user.role === "teacher"
-                      ? "Giảng viên"
-                      : "Học viên"
-                  }
-                />
-                <InfoRow label="Khóa học" value={user.courses || "Chưa cập nhật"} />
-                <InfoRow
-                  label="Ngày tham gia"
-                  value={user.createdAt ? formatDate(user.createdAt) : "Chưa cập nhật"}
-                />
-                <InfoRow
-                  label="Trạng thái"
-                  value={
-                    user.status === "active"
-                      ? "Hoạt động"
-                      : user.status === "pending"
-                      ? "Chờ xác thực"
-                      : "Vô hiệu hóa"
-                  }
-                  highlight
-                />
-              </div>
-
-              {/* Actions */}
-              <div className="flex justify-center gap-3 mt-4">
-                <button
-                  onClick={() => setViewUser(user)}
-                  className="px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium"
-                >
-                  Xem
-                </button>
-                <button
-                  onClick={() => {
-                    setEditUser(user)
-                    setIsEditUserOpen(true)
-                  }}
-                  className="px-4 py-2 rounded-lg bg-secondary text-sm font-medium"
-                >
-                  Sửa
-                </button>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
 

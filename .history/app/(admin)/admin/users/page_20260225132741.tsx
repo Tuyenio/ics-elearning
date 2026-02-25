@@ -162,21 +162,6 @@ import { toast } from "sonner"
 //   },
 // ]
 
-// InfoRow component for displaying label-value pairs in mobile card view
-type InfoRowProps = {
-  label: string
-  value: React.ReactNode
-  highlight?: boolean
-}
-function InfoRow({ label, value, highlight = false }: InfoRowProps) {
-  return (
-    <div className="flex justify-between items-center">
-      <span className="text-muted-foreground">{label}</span>
-      <span className={highlight ? "font-semibold text-primary dark:text-accent" : "font-medium text-foreground dark:text-white"}>{value}</span>
-    </div>
-  )
-}
-
 export default function AdminUsersPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedRole, setSelectedRole] = useState<"all" | "student" | "teacher" | "admin">("all")
@@ -768,6 +753,29 @@ const formatDate = (dateString?: string) => {
             </div>
           ))}
         </div>
+      // InfoRow component for mobile/tablet card view
+      function InfoRow({
+        label,
+        value,
+        highlight = false,
+      }: {
+        label: string
+        value: string
+        highlight?: boolean
+      }) {
+        return (
+          <div className="flex justify-between items-center bg-secondary/60 dark:bg-slate-800/60 rounded-lg px-3 py-2">
+            <span className="text-muted-foreground text-xs">{label}</span>
+            <span
+              className={`font-medium text-right ${
+                highlight ? "text-primary" : "text-foreground dark:text-white"
+              }`}
+            >
+              {value}
+            </span>
+          </div>
+        )
+      }
       </div>
 
       {/* User Detail Modal */}

@@ -960,29 +960,28 @@ if (typeof window !== 'undefined' && token) {
   }
 
   // ================== Dashboard Stats API ==================
-
   async getAdminDashboardStats(): Promise<any> {
-    return this.request('/admin/dashboard/stats');
+    return this.request('/api/admin/dashboard/stats');
   }
 
   async getAdminGrowthStats(): Promise<any> {
-    return this.request('/admin/dashboard/growth');
+    return this.request('/api/admin/dashboard/growth');
   }
 
   async getAdminRevenueReport(): Promise<any> {
-    return this.request('/admin/reports/revenue');
+    return this.request('/api/admin/reports/revenue');
   }
 
   async getAdminUserReport(): Promise<any> {
-    return this.request('/admin/reports/users');
+    return this.request('/api/admin/reports/users');
   }
 
   async getAdminPerformanceReport(): Promise<any> {
-    return this.request('/admin/reports/performance');
+    return this.request('/api/admin/reports/performance');
   }
 
   async getTeacherDashboardStats(): Promise<any> {
-    return this.request('/teacher/dashboard/stats');
+    return this.request('/api/teacher/dashboard/stats');
   }
 
   async getStudentDashboardStats(): Promise<any> {

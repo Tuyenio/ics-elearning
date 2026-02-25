@@ -162,21 +162,6 @@ import { toast } from "sonner"
 //   },
 // ]
 
-// InfoRow component for displaying label-value pairs in mobile card view
-type InfoRowProps = {
-  label: string
-  value: React.ReactNode
-  highlight?: boolean
-}
-function InfoRow({ label, value, highlight = false }: InfoRowProps) {
-  return (
-    <div className="flex justify-between items-center">
-      <span className="text-muted-foreground">{label}</span>
-      <span className={highlight ? "font-semibold text-primary dark:text-accent" : "font-medium text-foreground dark:text-white"}>{value}</span>
-    </div>
-  )
-}
-
 export default function AdminUsersPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedRole, setSelectedRole] = useState<"all" | "student" | "teacher" | "admin">("all")
@@ -599,7 +584,7 @@ const formatDate = (dateString?: string) => {
                     </td>
                     <td className="py-4 px-6 text-foreground dark:text-white">{user.courses || "Chưa cập nhật"}</td>
                     <td className="py-4 px-6 text-muted-foreground dark:text-slate-400">{user.createdAt ? formatDate(user.createdAt) : "Chưa cập nhật"}
-</td>
+                    </td>
                     <td className="py-4 px-6">
                       <span
                         className={`px-3 py-1.5 rounded-full text-xs font-semibold inline-flex items-center gap-1.5 ${
@@ -625,28 +610,27 @@ const formatDate = (dateString?: string) => {
                       </button>
                       {openMenu === user.id && (
                         <div className="absolute right-0 top-full mt-2 bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-lg shadow-lg z-10 min-w-48">
-
                           {/* Xem chi tiết */}
-                        <button
-                          onClick={() => {
-                            setViewUser(user)       // ⬅️ CHỈ set viewUser
-                            setOpenMenu(null)
-                          }}
-                          className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-foreground dark:text-white"
-                        >
-                          <Eye size={16} /> Xem chi tiết
-                        </button>
+                          <button
+                            onClick={() => {
+                              setViewUser(user)
+                              setOpenMenu(null)
+                            }}
+                            className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-foreground dark:text-white"
+                          >
+                            <Eye size={16} /> Xem chi tiết
+                          </button>
                           {/* Sửa thông tin */}
-                        <button
-                          onClick={() => {
-                            setEditUser(user)       // ⬅️ CHỈ set editUser
-                            setIsEditUserOpen(true) // (nếu bạn đang dùng biến này)
-                            setOpenMenu(null)
-                          }}
-                          className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-foreground dark:text-white"
-                        >
-                          ✏️ Sửa thông tin
-                        </button>
+                          <button
+                            onClick={() => {
+                              setEditUser(user)
+                              setIsEditUserOpen(true)
+                              setOpenMenu(null)
+                            }}
+                            className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-foreground dark:text-white"
+                          >
+                            ✏️ Sửa thông tin
+                          </button>
                           {/* Khóa / Mở */}
                           <button
                             onClick={() =>
@@ -664,7 +648,6 @@ const formatDate = (dateString?: string) => {
                               </>
                             )}
                           </button>
-
                           {/* Xóa */}
                           <button
                             onClick={() => handleUserAction("delete", user.id)}
@@ -680,7 +663,6 @@ const formatDate = (dateString?: string) => {
               </tbody>
             </table>
           </div>
-
           {filteredUsers.length === 0 && (
             <div className="py-12 text-center">
               <User size={48} className="mx-auto mb-4 text-muted-foreground opacity-50" />
@@ -690,11 +672,11 @@ const formatDate = (dateString?: string) => {
         </div>
 
         {/* ===== MOBILE / TABLET CARD VIEW ===== */}
-        <div className="lg:hidden space-y-4">
+        <div className="lg:hidden space-y-4 animate-slideUp" style={{ animationDelay: "0.2s" }}>
           {filteredUsers.map((user) => (
             <div
               key={user.id}
-              className="bg-white/80 dark:bg-slate-900/70 border border-border dark:border-slate-800 rounded-2xl p-4 shadow-sm"
+              className="bg-white/80 dark:bg-slate-900/70 border border-border dark:border-slate-800 rounded-2xl p-4 shadow-sm flex flex-col items-center mx-auto max-w-xs w-full"
             >
               {/* Avatar + Name */}
               <div className="flex flex-col items-center text-center gap-2 mb-4">
@@ -717,7 +699,7 @@ const formatDate = (dateString?: string) => {
               </div>
 
               {/* Info rows */}
-              <div className="space-y-2 text-sm">
+              <div className="space-y-2 text-sm w-full">
                 <InfoRow label="Số điện thoại" value={user.phone || "Chưa cập nhật"} />
                 <InfoRow
                   label="Vai trò"
@@ -767,7 +749,36 @@ const formatDate = (dateString?: string) => {
               </div>
             </div>
           ))}
+          {filteredUsers.length === 0 && (
+            <div className="py-12 text-center">
+              <User size={48} className="mx-auto mb-4 text-muted-foreground opacity-50" />
+              <p className="text-muted-foreground dark:text-slate-400">Không tìm thấy người dùng nào</p>
+            </div>
+          )}
         </div>
+      // InfoRow component for mobile card view
+      function InfoRow({
+        label,
+        value,
+        highlight = false,
+      }: {
+        label: string
+        value: string
+        highlight?: boolean
+      }) {
+        return (
+          <div className="flex justify-between items-center bg-secondary/60 dark:bg-slate-800/60 rounded-lg px-3 py-2">
+            <span className="text-muted-foreground text-xs">{label}</span>
+            <span
+              className={`font-medium text-right ${
+                highlight ? "text-primary" : "text-foreground dark:text-white"
+              }`}
+            >
+              {value}
+            </span>
+          </div>
+        )
+      }
       </div>
 
       {/* User Detail Modal */}

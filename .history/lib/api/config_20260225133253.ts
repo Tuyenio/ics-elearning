@@ -1,5 +1,5 @@
 // Base API configuration
-const API_BASE_URL = '';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -180,12 +180,12 @@ export const API_ENDPOINTS = {
     ADMIN_PENDING: '/certificates/templates/admin/pending',
   },
   SCHEDULE: {
-    LIST: '/schedule',
-    CREATE: '/schedule',
-    BY_ID: (id: string) => `/schedule/${id}`,
-    UPDATE: (id: string) => `/schedule/${id}`,
-    DELETE: (id: string) => `/schedule/${id}`,
-  },
+  LIST: '/schedule',
+  CREATE: '/schedule',
+  BY_ID: (id: string) => `/schedule/${id}`,
+  UPDATE: (id: string) => `/schedule/${id}`,
+  DELETE: (id: string) => `/schedule/${id}`,
+},
   UPLOAD: {
     AVATAR: '/upload/avatar',
     IMAGE: '/upload/image',
@@ -193,9 +193,10 @@ export const API_ENDPOINTS = {
     DOCUMENT: '/upload/document',
   },
   SYSTEM_SETTINGS: {
-    GET: '/system-settings',
-    UPDATE: '/system-settings',
-  },
+  GET: '/system-settings',
+  UPDATE: '/system-settings',
+},
+
   TEACHER: {
     DASHBOARD: '/teacher/dashboard/stats',
     EARNINGS: '/teacher/earnings',
@@ -205,6 +206,7 @@ export const API_ENDPOINTS = {
     REVIEWS: '/teacher/reviews',
     REVIEW_REPLY: (id: string) => `/teacher/reviews/${id}/reply`,
   },
+
 } as const;
 
 export { API_BASE_URL };
