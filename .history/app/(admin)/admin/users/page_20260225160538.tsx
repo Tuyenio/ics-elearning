@@ -1,0 +1,1020 @@
+"use client"
+import { useState, useEffect, useRef  } from "react"
+import { AddUserModal, ConfirmDialog } from "@/components/ui/admin-modals"
+import { EditUserModal } from "@/components/ui/edit-user-modal"
+import type { UserData, UpdateUserData } from "@/app/types/user"
+import { toast } from "sonner"
+// DropdownFilter: custom dropdown with slide-down effect
+type DropdownOption = { value: string; label: string }
+
+// ================= FILTER =================
+const filteredUsers = userList.filter(
+  (user) =>
+    (user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (user.phone ?? "").includes(searchQuery)) &&
+    (selectedRole === "all" || user.role === selectedRole) &&
+    (selectedStatus === "all" || user.status === selectedStatus),
+)
+
+        <div className="lg:hidden space-y-4">
+          {filteredUsers.map((user) => (
+            <div
+              key={user.id}
+              data-user-card
+              className="relative bg-white/80 dark:bg-slate-900/70 border border-border dark:border-slate-800 rounded-2xl p-4 shadow-sm"
+            >
+              {/* Avatar + Name */}
+              <div className="flex flex-col items-center text-center gap-2 mb-4">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-lg">
+                  {user.avatar && !user.avatar.includes('ui-avatars.com') ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="w-14 h-14 rounded-full object-cover border-4 border-primary/20"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <span style={{ display: !user.avatar || user.avatar.includes('ui-avatars.com') ? 'flex' : 'none' }}>
+                    {user.name
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')
+                      .substring(0, 2)
+                      .toUpperCase()}
+                  </span>
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground dark:text-white">
+                    {user.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {user.email}
+                  </p>
+                </div>
+              </div>
+
+              {/* Info rows */}
+              <div className="space-y-2 text-sm">
+                <InfoRow label="Số điện thoại" value={user.phone || "Chưa cập nhật"} />
+                <InfoRow
+                  label="Vai trò"
+                  value={
+                    user.role === "admin"
+                      ? "Quản trị viên"
+                      : user.role === "teacher"
+                      ? "Giảng viên"
+                      : "Học viên"
+                  }
+                />
+                <InfoRow label="Khóa học" value={user.courses || "Chưa cập nhật"} />
+                <InfoRow
+                  label="Ngày tham gia"
+                  value={user.createdAt ? formatDate(user.createdAt) : "Chưa cập nhật"}
+                />
+                <InfoRow
+                  label="Trạng thái"
+                  value={
+                    user.status === "active"
+                      ? "Hoạt động"
+                      : user.status === "pending"
+                      ? "Chờ xác thực"
+                      : "Vô hiệu hóa"
+                  }
+                  highlight
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-center gap-3 mt-4">
+                <button
+                  onClick={e => {
+                    const card = (e.currentTarget.closest('[data-user-card]')) as HTMLElement | null;
+                    if (!card) return;
+                    const rect = card.getBoundingClientRect();
+                    setMobileModal({
+                      type: 'view',
+                      user,
+                      top: rect.bottom + 8,
+                      left: rect.left,
+                      width: rect.width,
+                    });
+                  }}
+                  className="px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium"
+                >
+                  Xem
+                </button>
+                <button
+                  onClick={e => {
+                    const card = (e.currentTarget.closest('[data-user-card]')) as HTMLElement | null;
+                    if (!card) return;
+                    const rect = card.getBoundingClientRect();
+                    setMobileModal({
+                      type: 'edit',
+                      user,
+                      top: rect.bottom + 8,
+                      left: rect.left,
+                      width: rect.width,
+                    });
+                  }}
+                  className="px-4 py-2 rounded-lg bg-secondary text-sm font-medium"
+                >
+                  Sửa
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+      {/* MOBILE MODAL: Rendered ONCE at end of page, fixed and anchored to card */}
+      {mobileModal && (
+        <>
+          {/* Overlay */}
+          <div
+            className="fixed inset-0 bg-black/60 z-[9998]"
+            onClick={() => setMobileModal(null)}
+          />
+          {/* Modal */}
+          <div
+            className="fixed z-[9999]"
+            style={{
+              top: mobileModal.top,
+              left: mobileModal.left,
+              width: mobileModal.width,
+            }}
+          >
+            <div className="bg-card dark:bg-slate-900 rounded-2xl shadow-2xl max-h-[85vh] overflow-y-auto">
+              {mobileModal.type === 'edit' ? (
+                <EditUserModal
+                  user={mobileModal.user}
+                  onClose={() => setMobileModal(null)}
+                  onSubmit={async (data) => {
+                    await handleUpdateUser(data)
+                    setMobileModal(null)
+                  }}
+                />
+              ) : (
+                <div className="p-4">
+                  <div className="flex flex-col items-center gap-4 mb-4">
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-2xl">
+                      {mobileModal.user.avatar && !mobileModal.user.avatar.includes('ui-avatars.com') ? (
+                        <img src={mobileModal.user.avatar} alt={mobileModal.user.name} className="w-20 h-20 rounded-full object-cover border-4 border-primary/20" />
+                      ) : null}
+                      <span style={{ display: !mobileModal.user.avatar || mobileModal.user.avatar.includes('ui-avatars.com') ? 'flex' : 'none' }}>
+                        {mobileModal.user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="text-center">
+                      <h3 className="text-2xl font-bold text-foreground dark:text-white">{mobileModal.user.name}</h3>
+                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ${mobileModal.user.role === "teacher" ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400" : mobileModal.user.role === "admin" ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"}`}>{mobileModal.user.role === "teacher" ? "Giảng viên" : mobileModal.user.role === "admin" ? "Quản trị viên" : "Học viên"}</span>
+                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ml-2 ${mobileModal.user.status === "active" ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" : "bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-400"}`}>{mobileModal.user.status === "active" ? "Hoạt động" : mobileModal.user.status === "pending" ? "Chờ xác thực" : "Vô hiệu hóa"}</span>
+                    </div>
+                  </div>
+                  <div className="space-y-2 text-sm mb-4">
+                    <InfoRow label="Số điện thoại" value={mobileModal.user.phone || "Chưa cập nhật"} />
+                    <InfoRow label="Email" value={mobileModal.user.email} />
+                    <InfoRow label="Ngày tham gia" value={mobileModal.user.createdAt ? formatDate(mobileModal.user.createdAt) : "Chưa cập nhật"} />
+                    <InfoRow label="Khóa học" value={mobileModal.user.courses || "Chưa cập nhật"} />
+                    <InfoRow label="Chứng chỉ" value={mobileModal.user.certificates || 0} />
+                    <InfoRow label="Tổng giờ học" value={mobileModal.user.totalHours ? `${mobileModal.user.totalHours}h` : "Chưa cập nhật"} />
+                    {mobileModal.user.address && <InfoRow label="Địa chỉ" value={mobileModal.user.address} />}
+                    {mobileModal.user.bio && <InfoRow label="Giới thiệu" value={mobileModal.user.bio} />}
+                  </div>
+                  <div className="flex gap-3 pt-2 border-t border-border dark:border-slate-800">
+                    <button
+                      onClick={() => setMobileModal(null)}
+                      className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900/50"
+                    >
+                      Đóng
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+  // Mobile modal state: type, user, and card position
+  const [mobileModal, setMobileModal] = useState<{
+    type: 'view' | 'edit',
+    user: UserData,
+    top: number,
+    left: number,
+    width: number,
+  } | null>(null);
+
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean
+    action: string
+    userId?: number
+  }>({ isOpen: false, action: "" })
+  const [userList, setUserList] = useState<UserData[]>([])
+
+  // Close menu on outside click or Escape
+  useEffect(() => {
+    if (!openMenu || !menuPos) return;
+    function handle(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpenMenu(null);
+        setMenuPos(null);
+      }
+    }
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setOpenMenu(null);
+        setMenuPos(null);
+      }
+    }
+    document.addEventListener("mousedown", handle);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handle);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [openMenu, menuPos]);
+
+  // ================= FETCH USERS =================
+const fetchUsers = async () => {
+  const token = localStorage.getItem("auth_token") // ✅ SỬA Ở ĐÂY
+
+  if (!token) {
+    console.error("No access token found")
+    return
+  }
+
+  // Lấy tất cả users - set limit=1000 để không bị pagination
+  const res = await fetch("http://localhost:5001/api/users?limit=1000", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!res.ok) {
+    console.error("Fetch users failed:", res.status)
+    setUserList([])
+    return
+  }
+
+  const result = await res.json()
+  console.log("📊 Total users fetched:", result.data?.data?.length || 0)
+  setUserList(result.data?.data ?? [])
+}
+  useEffect(() => {
+    fetchUsers()
+  }, [])
+
+  // ================= FILTER =================
+  const filteredUsers = userList.filter(
+    (user) =>
+      (user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (user.phone ?? "").includes(searchQuery)) &&
+      (selectedRole === "all" || user.role === selectedRole) &&
+      (selectedStatus === "all" || user.status === selectedStatus),
+  )
+
+  // ================= ADD USER =================
+const handleAddUser = async (newUser: any) => {
+  try {
+    const token = localStorage.getItem("auth_token")
+
+    if (!token) {
+      toast.error("Chưa đăng nhập")
+      return
+    }
+
+    const res = await fetch("http://localhost:5001/api/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        email: newUser.email,
+        password: newUser.password || "123456",
+        name: newUser.name,
+        phone: newUser.phone,
+        role: newUser.role || "student",
+      }),
+    })
+
+    if (!res.ok) {
+      const err = await res.json()
+      console.error(err)
+      toast.error(err.message || "Thêm người dùng thất bại")
+      return
+    }
+
+    toast.success("Đã thêm người dùng thành công! Email đăng nhập và mật khẩu đã được gửi tới người dùng.", {
+      duration: 5000,
+    })
+    setIsAddUserOpen(false)
+    await fetchUsers()
+  } catch (err) {
+    console.error(err)
+    alert("Thêm người dùng thất bại")
+  }
+}
+
+  // ================= ACTIONS =================
+  const handleUserAction = (action: string, userId: number) => {
+    setConfirmDialog({ isOpen: true, action, userId })
+  }
+
+const executeAction = async () => {
+  const { action, userId } = confirmDialog
+  if (!userId) return
+
+  const token = localStorage.getItem("auth_token")
+
+  if (!token) {
+    toast.error("Chưa đăng nhập")
+    return
+  }
+
+  try {
+    if (action === "delete") {
+      const res = await fetch(
+        `http://localhost:5001/api/users/${userId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      if (!res.ok) {
+        const err = await res.json()
+        console.error(err)
+        toast.error("Xóa người dùng thất bại")
+        return
+      }
+
+      toast.success("Đã xóa người dùng thành công")
+      await fetchUsers()
+    } else if (action === "lock" || action === "unlock") {
+      // Khóa hoặc mở khóa tài khoản
+      const newStatus = action === "lock" ? "inactive" : "active"
+      
+      const res = await fetch(
+        `http://localhost:5001/api/users/${userId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      )
+
+      if (!res.ok) {
+        const err = await res.json()
+        console.error(err)
+        toast.error(action === "lock" ? "Khóa tài khoản thất bại" : "Mở khóa tài khoản thất bại")
+        return
+      }
+
+      toast.success(action === "lock" ? "Đã khóa tài khoản" : "Đã mở khóa tài khoản")
+      await fetchUsers()
+    }
+  } catch (err) {
+    console.error(err)
+    toast.error("Thao tác thất bại")
+  } finally {
+    setConfirmDialog({ isOpen: false, action: "" })
+    setOpenMenu(null)
+  }
+}
+const handleUpdateUser = async (updatedData: any) => {
+  if (!editUser) return
+
+  try {
+    const token = localStorage.getItem("auth_token")
+    if (!token) {
+      toast.error("Chưa đăng nhập")
+      return
+    }
+
+    console.log("Updating user:", editUser.id, "with data:", updatedData)
+
+    const res = await fetch(
+      `http://localhost:5001/api/users/${editUser.id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedData),
+      }
+    )
+
+    if (!res.ok) {
+      const errorData = await res.json()
+      console.error("Update error:", errorData)
+      toast.error(`Cập nhật thất bại: ${errorData.message || 'Lỗi không xác định'}`)
+      return
+    }
+
+    const result = await res.json()
+    console.log("Update success:", result)
+    
+    toast.success("Đã cập nhật người dùng thành công")
+    await fetchUsers()
+    setIsEditUserOpen(false)
+    setEditUser(null)
+  } catch (err) {
+    console.error("Update user error:", err)
+    toast.error("Cập nhật người dùng thất bại")
+  }
+}
+
+const formatDate = (dateString?: string) => {
+  if (!dateString) return "Chưa cập nhật"
+  const d = new Date(dateString)
+  if (isNaN(d.getTime())) return "Chưa cập nhật"
+  return d.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  })
+}
+  // ================= STATS =================
+  const totalUsers = userList.length
+  const totalStudents = userList.filter((u) => u.role === "student").length
+  const totalTeachers = userList.filter((u) => u.role === "teacher").length
+  const totalAdmins = userList.filter((u) => u.role === "admin").length
+  const activeUsers = userList.filter((u) => u.status === "active").length
+
+  return (
+
+    <div className="min-h-screen w-full">
+      <div className="w-full space-y-8">
+        {/* Header with Stats */}
+        <div className="relative overflow-hidden p-8 rounded-3xl animate-fadeIn" style={{ backgroundImage: "url('/image/bg_login.png')", backgroundSize: "cover", backgroundPosition: "center" }}>
+          {/* Overlay for better readability */}
+          <div className="absolute inset-0 bg-black/15 dark:bg-black/45 rounded-3xl"></div>
+          <div className="relative z-10 space-y-8">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 animate-slideDown" style={{ animationDelay: "0.15s" }}>
+              <div>
+                <h1 className="text-3xl font-bold text-white mb-2 drop-shadow-lg">Quản lý người dùng</h1>
+                <p className="text-black/70 dark:text-white/80 drop-shadow">Quản lý tất cả người dùng trong hệ thống</p>
+              </div>
+              <button
+                onClick={() => setIsAddUserOpen(true)}
+                className="flex items-center gap-2 bg-white text-primary px-6 py-3 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:scale-[1.02] w-fit backdrop-blur-sm"
+              >
+                <Plus size={20} /> Thêm người dùng
+              </button>
+            </div>
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="animate-slideUp" style={{ animationDelay: "0.25s" }}>
+                <div className="group flex items-center justify-between p-5 h-full bg-white/80 dark:bg-slate-800/70 backdrop-blur-md rounded-2xl hover:bg-white/95 dark:hover:bg-slate-800/90 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer">
+                  <div>
+                    <p className="text-muted-foreground dark:text-slate-300 text-sm font-medium">Tổng người dùng</p>
+                    <p className="text-2xl font-bold text-foreground dark:text-white mt-1">{totalUsers}</p>
+                  </div>
+                  <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-all duration-300">
+                    <User size={20} className="text-blue-600 dark:text-blue-400" />
+                  </div>
+                </div>
+              </div>
+              <div className="animate-slideUp" style={{ animationDelay: "0.35s" }}>
+                <div className="group flex items-center justify-between p-5 h-full bg-white/80 dark:bg-slate-800/70 backdrop-blur-md rounded-2xl hover:bg-white/95 dark:hover:bg-slate-800/90 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer">
+                  <div>
+                    <p className="text-muted-foreground dark:text-slate-300 text-sm font-medium">Học viên</p>
+                    <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{totalStudents}</p>
+                  </div>
+                  <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-all duration-300">
+                    <BookOpen size={20} className="text-green-600 dark:text-green-400" />
+                  </div>
+                </div>
+              </div>
+              <div className="animate-slideUp" style={{ animationDelay: "0.45s" }}>
+                <div className="group flex items-center justify-between p-5 h-full bg-white/80 dark:bg-slate-800/70 backdrop-blur-md rounded-2xl hover:bg-white/95 dark:hover:bg-slate-800/90 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer">
+                  <div>
+                    <p className="text-muted-foreground dark:text-slate-300 text-sm font-medium">Giảng viên</p>
+                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{totalTeachers}</p>
+                  </div>
+                  <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-all duration-300">
+                    <Award size={20} className="text-purple-600 dark:text-purple-400" />
+                  </div>
+                </div>
+              </div>
+              <div className="animate-slideUp" style={{ animationDelay: "0.55s" }}>
+                <div className="group flex items-center justify-between p-5 h-full bg-white/80 dark:bg-slate-800/70 backdrop-blur-md rounded-2xl hover:bg-white/95 dark:hover:bg-slate-800/90 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer">
+                  <div>
+                    <p className="text-muted-foreground dark:text-slate-300 text-sm font-medium">Quản trị viên</p>
+                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400 mt-1">{totalAdmins}</p>
+                  </div>
+                  <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-all duration-300">
+                    <Users size={20} className="text-orange-600 dark:text-orange-400" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Search & Filter - Redesigned (OUTSIDE overflow-hidden) */}
+        <div className="relative z-50 bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-border/50 dark:border-slate-800/50 rounded-2xl p-6 space-y-4">
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground dark:text-slate-400" size={20} />
+            <input
+              type="text"
+              placeholder="Tìm kiếm theo tên, email hoặc số điện thoại..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-3.5 bg-white dark:bg-slate-950 border-2 border-border/60 dark:border-slate-700 rounded-xl focus:outline-none focus:border-primary dark:focus:border-accent transition-all duration-300 text-foreground dark:text-white placeholder:text-muted-foreground/60"
+            />
+          </div>
+          {/* Filters */}
+          <div className="filter-row">
+            <span className="text-sm font-semibold text-foreground dark:text-white">Lọc theo:</span>
+            <DropdownFilter
+              options={[
+                { value: "all", label: "Tất cả người dùng" },
+                { value: "student", label: "Học viên" },
+                { value: "teacher", label: "Giảng viên" },
+                { value: "admin", label: "Quản trị viên" },
+              ]}
+              value={selectedRole}
+              onChange={(v: string) => setSelectedRole(v as "all" | "student" | "teacher" | "admin")}
+              width={160}
+            />
+            <DropdownFilter
+              options={[
+                { value: "all", label: "Tất cả trạng thái" },
+                { value: "active", label: "Hoạt động" },
+                { value: "inactive", label: "Vô hiệu hóa" },
+                { value: "pending", label: "Chờ xác thực" },
+              ]}
+              value={selectedStatus}
+              onChange={(v: string) => setSelectedStatus(v as "all" | "active" | "inactive" | "pending")}
+              width={180}
+            />
+          </div>
+        </div>
+
+        {/* ===== DESKTOP TABLE ===== */}
+        <div className="relative z-10 hidden lg:block bg-white/80 dark:bg-slate-900/70 backdrop-blur-md border border-border dark:border-slate-800 rounded-2xl overflow-hidden animate-slideUp" style={{ animationDelay: "0.2s" }}>
+          <div className="overflow-x-auto overflow-y-visible">
+            <table className="w-full text-sm">
+              {/* TOÀN BỘ TABLE CŨ GIỮ NGUYÊN */}
+              <thead>
+                <tr className="border-b border-border dark:border-slate-800 bg-white/50 dark:bg-slate-800/50">
+                  <th className="text-left py-4 px-6 font-semibold text-foreground dark:text-white">Người dùng</th>
+                  <th className="text-left py-4 px-6 font-semibold text-foreground dark:text-white">Liên hệ</th>
+                  <th className="text-left py-4 px-6 font-semibold text-foreground dark:text-white">Vai trò</th>
+                  <th className="text-left py-4 px-6 font-semibold text-foreground dark:text-white">Khóa học</th>
+                  <th className="text-left py-4 px-6 font-semibold text-foreground dark:text-white">Ngày tham gia</th>
+                  <th className="text-left py-4 px-6 font-semibold text-foreground dark:text-white">Trạng thái</th>
+                  <th className="text-left py-4 px-6 font-semibold text-foreground dark:text-white">Hành động</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredUsers.map((user) => (
+                  <tr
+                    key={user.id}
+                    className="border-b border-border dark:border-slate-800 hover:bg-white/60 dark:hover:bg-slate-800/60 transition-all duration-300"
+                  >
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-3">
+                        <div className="relative w-10 h-10 flex-shrink-0">
+                          {user.avatar && !user.avatar.includes('ui-avatars.com') ? (
+                            <img
+                              src={user.avatar}
+                              alt={user.name}
+                              className="w-10 h-10 rounded-full object-cover border-2 border-primary/20"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                                if (fallback) fallback.style.display = 'flex';
+                              }}
+                            />
+                          ) : null}
+                          <div
+                            className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold"
+                            style={{ display: !user.avatar || user.avatar.includes('ui-avatars.com') ? 'flex' : 'none' }}
+                          >
+                            {user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-foreground dark:text-white font-medium">{user.name}</p>
+                          <p className="text-muted-foreground dark:text-slate-400 text-xs">{user.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400">
+                        <Phone size={14} />
+                        <span>{user.phone || "Chưa cập nhật"}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          user.role === "admin"
+                            ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400"
+                            : user.role === "teacher"
+                            ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                        }`}
+                      >
+                        {user.role === "admin" ? "Quản trị viên" : user.role === "teacher" ? "Giảng viên" : "Học viên"}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-foreground dark:text-white">{user.courses || "Chưa cập nhật"}</td>
+                    <td className="py-4 px-6 text-muted-foreground dark:text-slate-400">{user.createdAt ? formatDate(user.createdAt) : "Chưa cập nhật"}
+</td>
+                    <td className="py-4 px-6">
+                      <span
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold inline-flex items-center gap-1.5 ${
+                          user.status === "active"
+                            ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                            : user.status === "pending"
+                            ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
+                            : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
+                        }`}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          user.status === "active" ? "bg-emerald-500" : user.status === "pending" ? "bg-amber-500" : "bg-red-500"
+                        }`} />
+                        {user.status === "active" ? "Hoạt động" : user.status === "pending" ? "Chờ xác thực" : "Vô hiệu hóa"}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6">
+                      <button
+                       onClick={(e) => {
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const menuWidth = 192;
+
+                          let left = rect.right - menuWidth;
+                          if (left < 8) left = 8;
+                          if (left + menuWidth > window.innerWidth - 8) {
+                            left = window.innerWidth - menuWidth - 8;
+                          }
+
+                          setMenuPos({
+                            x: left + window.scrollX,
+                            y: rect.bottom + window.scrollY,
+                          });
+                          setOpenMenu(user.id);
+                        }}
+                        className="p-2 hover:bg-secondary dark:hover:bg-slate-800 rounded-lg transition-smooth"
+                      >
+                        <MoreVertical size={18} className="text-muted-foreground dark:text-slate-400" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {filteredUsers.length === 0 && (
+            <div className="py-12 text-center">
+              <User size={48} className="mx-auto mb-4 text-muted-foreground opacity-50" />
+              <p className="text-muted-foreground dark:text-slate-400">Không tìm thấy người dùng nào</p>
+            </div>
+          )}
+        </div>
+
+        {/* ===== MOBILE / TABLET CARD VIEW ===== */}
+        <div className="lg:hidden space-y-4">
+          {filteredUsers.map((user) => (
+            <div
+              key={user.id}
+              data-user-card
+              className="relative bg-white/80 dark:bg-slate-900/70 border border-border dark:border-slate-800 rounded-2xl p-4 shadow-sm"
+            >
+              {/* Avatar + Name */}
+              <div className="flex flex-col items-center text-center gap-2 mb-4">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-lg">
+                  {user.avatar && !user.avatar.includes('ui-avatars.com') ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="w-14 h-14 rounded-full object-cover border-4 border-primary/20"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <span style={{ display: !user.avatar || user.avatar.includes('ui-avatars.com') ? 'flex' : 'none' }}>
+                    {user.name
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')
+                      .substring(0, 2)
+                      .toUpperCase()}
+                  </span>
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground dark:text-white">
+                    {user.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {user.email}
+                  </p>
+                </div>
+              </div>
+
+              {/* Info rows */}
+              <div className="space-y-2 text-sm">
+                <InfoRow label="Số điện thoại" value={user.phone || "Chưa cập nhật"} />
+                <InfoRow
+                  label="Vai trò"
+                  value={
+                    user.role === "admin"
+                      ? "Quản trị viên"
+                      : user.role === "teacher"
+                      ? "Giảng viên"
+                      : "Học viên"
+                  }
+                />
+                <InfoRow label="Khóa học" value={user.courses || "Chưa cập nhật"} />
+                <InfoRow
+                  label="Ngày tham gia"
+                  value={user.createdAt ? formatDate(user.createdAt) : "Chưa cập nhật"}
+                />
+                <InfoRow
+                  label="Trạng thái"
+                  value={
+                    user.status === "active"
+                      ? "Hoạt động"
+                      : user.status === "pending"
+                      ? "Chờ xác thực"
+                      : "Vô hiệu hóa"
+                  }
+                  highlight
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-center gap-3 mt-4">
+                <button
+                  onClick={e => {
+                    const card = (e.currentTarget.closest('[data-user-card]')) as HTMLElement | null;
+                    if (!card) return;
+                    const rect = card.getBoundingClientRect();
+                    setMobileModal({
+                      type: 'view',
+                      user,
+                      top: rect.bottom + 8,
+                      left: rect.left,
+                      width: rect.width,
+                    });
+                  }}
+                  className="px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium"
+                >
+                  Xem
+                </button>
+                <button
+                  onClick={e => {
+                    const card = (e.currentTarget.closest('[data-user-card]')) as HTMLElement | null;
+                    if (!card) return;
+                    const rect = card.getBoundingClientRect();
+                    setMobileModal({
+                      type: 'edit',
+                      user,
+                      top: rect.bottom + 8,
+                      left: rect.left,
+                      width: rect.width,
+                    });
+                  }}
+                  className="px-4 py-2 rounded-lg bg-secondary text-sm font-medium"
+                >
+                  Sửa
+                </button>
+              </div>
+
+              {/* No per-card modal rendering for mobile, modal is rendered at end of page */}
+                  {/* MOBILE MODAL: Rendered at end of page, fixed and anchored to card */}
+                  {mobileModal && (
+                    <>
+                      {/* Overlay */}
+                      <div
+                        className="fixed inset-0 bg-black/60 z-[9998]"
+                        onClick={() => setMobileModal(null)}
+                      />
+                      {/* Modal */}
+                      <div
+                        className="fixed z-[9999]"
+                        style={{
+                          top: mobileModal.top,
+                          left: mobileModal.left,
+                          width: mobileModal.width,
+                        }}
+                      >
+                        <div className="bg-card dark:bg-slate-900 rounded-2xl shadow-2xl max-h-[85vh] overflow-y-auto">
+                          {mobileModal.type === 'edit' ? (
+                            <EditUserModal
+                              user={mobileModal.user}
+                              onClose={() => setMobileModal(null)}
+                              onSubmit={async (data) => {
+                                await handleUpdateUser(data)
+                                setMobileModal(null)
+                              }}
+                            />
+                          ) : (
+                            <div className="p-4">
+                              <div className="flex flex-col items-center gap-4 mb-4">
+                                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-2xl">
+                                  {mobileModal.user.avatar && !mobileModal.user.avatar.includes('ui-avatars.com') ? (
+                                    <img src={mobileModal.user.avatar} alt={mobileModal.user.name} className="w-20 h-20 rounded-full object-cover border-4 border-primary/20" />
+                                  ) : null}
+                                  <span style={{ display: !mobileModal.user.avatar || mobileModal.user.avatar.includes('ui-avatars.com') ? 'flex' : 'none' }}>
+                                    {mobileModal.user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                                  </span>
+                                </div>
+                                <div className="text-center">
+                                  <h3 className="text-2xl font-bold text-foreground dark:text-white">{mobileModal.user.name}</h3>
+                                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ${mobileModal.user.role === "teacher" ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400" : mobileModal.user.role === "admin" ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"}`}>{mobileModal.user.role === "teacher" ? "Giảng viên" : mobileModal.user.role === "admin" ? "Quản trị viên" : "Học viên"}</span>
+                                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ml-2 ${mobileModal.user.status === "active" ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" : "bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-400"}`}>{mobileModal.user.status === "active" ? "Hoạt động" : mobileModal.user.status === "pending" ? "Chờ xác thực" : "Vô hiệu hóa"}</span>
+                                </div>
+                              </div>
+                              <div className="space-y-2 text-sm mb-4">
+                                <InfoRow label="Số điện thoại" value={mobileModal.user.phone || "Chưa cập nhật"} />
+                                <InfoRow label="Email" value={mobileModal.user.email} />
+                                <InfoRow label="Ngày tham gia" value={mobileModal.user.createdAt ? formatDate(mobileModal.user.createdAt) : "Chưa cập nhật"} />
+                                <InfoRow label="Khóa học" value={mobileModal.user.courses || "Chưa cập nhật"} />
+                                <InfoRow label="Chứng chỉ" value={mobileModal.user.certificates || 0} />
+                                <InfoRow label="Tổng giờ học" value={mobileModal.user.totalHours ? `${mobileModal.user.totalHours}h` : "Chưa cập nhật"} />
+                                {mobileModal.user.address && <InfoRow label="Địa chỉ" value={mobileModal.user.address} />}
+                                {mobileModal.user.bio && <InfoRow label="Giới thiệu" value={mobileModal.user.bio} />}
+                              </div>
+                              <div className="flex gap-3 pt-2 border-t border-border dark:border-slate-800">
+                                <button
+                                  onClick={() => setMobileModal(null)}
+                                  className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900/50"
+                                >
+                                  Đóng
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Action Menu rendered OUTSIDE table for correct overlay */}
+      {openMenu && menuPos && (
+  <div
+    ref={menuRef}
+    className="absolute z-[9999] bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-lg shadow-lg min-w-48"
+    style={{
+      top: menuPos.y + 8,
+      left: menuPos.x,
+    }}
+  >
+          {/* Xem chi tiết */}
+          <button
+            onClick={() => {
+              const user = filteredUsers.find(u => u.id === openMenu)
+              if (user) setViewUser(user)
+              setOpenMenu(null)
+              setMenuPos(null)
+            }}
+            className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-foreground dark:text-white"
+          >
+            <Eye size={16} /> Xem chi tiết
+          </button>
+          {/* Sửa thông tin */}
+          <button
+            onClick={() => {
+              const user = filteredUsers.find(u => u.id === openMenu)
+              if (user) setEditUser(user)
+              setIsEditUserOpen(true)
+              setOpenMenu(null)
+              setMenuPos(null)
+            }}
+            className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-foreground dark:text-white"
+          >
+            ✏️ Sửa thông tin
+          </button>
+          {/* Khóa / Mở */}
+          <button
+            onClick={() => {
+              const user = filteredUsers.find(u => u.id === openMenu)
+              if (user) handleUserAction(user.status === "active" ? "lock" : "unlock", user.id)
+              setOpenMenu(null)
+              setMenuPos(null)
+            }}
+            className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-foreground dark:text-white"
+          >
+            {(() => {
+              const user = filteredUsers.find(u => u.id === openMenu)
+              if (!user) return null
+              return user.status === "active"
+                ? (<><Lock size={16} /> Khóa tài khoản</>)
+                : (<><Unlock size={16} /> Mở khóa tài khoản</>)
+            })()}
+          </button>
+          {/* Xóa */}
+          <button
+            onClick={() => {
+              const user = filteredUsers.find(u => u.id === openMenu)
+              if (user) handleUserAction("delete", user.id)
+              setOpenMenu(null)
+              setMenuPos(null)
+            }}
+            className="w-full text-left px-4 py-2 hover:bg-destructive/10 dark:hover:bg-destructive/20 flex items-center gap-2 text-destructive"
+          >
+            <Trash2 size={16} /> Xóa tài khoản
+          </button>
+        </div>
+      )}
+
+      {/* Edit Modal (anchored on mobile) */}
+      {((window.innerWidth < 1024 && mobileModal?.type === 'edit' && mobileModal && isEditUserOpen && editUser) || (window.innerWidth >= 1024 && isEditUserOpen && editUser)) && (
+        <>
+          <div
+            className={
+              `z-[9999] ${mobileModal?.type === 'edit' && mobileModal && window.innerWidth < 1024 ? 'fixed left-0 top-0 w-full h-full pointer-events-auto' : 'fixed inset-0 flex items-center justify-center p-4 bg-black/60'}`
+            }
+            style={mobileModal?.type === 'edit' && mobileModal && window.innerWidth < 1024 ? { pointerEvents: 'none' } : {}}
+          >
+            {/* Overlay for mobile: click to close */}
+            {mobileModal?.type === 'edit' && mobileModal && window.innerWidth < 1024 && (
+              <div
+                className="fixed left-0 top-0 w-full h-full bg-black/60 z-[9998]"
+                style={{ pointerEvents: 'auto' }}
+                onClick={() => { setIsEditUserOpen(false); setEditUser(null); setMobileModal(null); }}
+              />
+            )}
+            <div
+              className={
+                `bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative z-[10000]`
+              }
+              style={
+                mobileModal?.type === 'edit' && mobileModal && window.innerWidth < 1024
+                  ? {
+                      position: 'fixed',
+                      left: mobileModal.left,
+                      top: mobileModal.top,
+                      width: mobileModal.width,
+                      pointerEvents: 'auto',
+                    }
+                  : {}
+              }
+            >
+              <EditUserModal
+                user={editUser}
+                onClose={() => {
+                  setIsEditUserOpen(false);
+                  setEditUser(null);
+                  setMobileModal(null);
+                }}
+                onSubmit={handleUpdateUser}
+              />
+            </div>
+          </div>
+        </>
+      )}
+  
+      <AddUserModal
+  isOpen={isAddUserOpen}
+  onClose={() => setIsAddUserOpen(false)}
+  onAdd={handleAddUser}
+/>
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog({ isOpen: false, action: "" })}
+        onConfirm={executeAction}
+        title={
+          confirmDialog.action === "lock"
+            ? "Khóa tài khoản"
+            : confirmDialog.action === "unlock"
+              ? "Mở khóa tài khoản"
+              : "Xóa tài khoản"
+        }
+        message={
+          confirmDialog.action === "lock"
+            ? "Bạn có chắc chắn muốn khóa tài khoản này không?"
+            : confirmDialog.action === "unlock"
+              ? "Bạn có chắc chắn muốn mở khóa tài khoản này không?"
+              : "Bạn có chắc chắn muốn xóa tài khoản này không? Hành động này không thể hoàn tác."
+        }
+        isDangerous={confirmDialog.action === "delete"}
+      />
+    </div>
+  )
+}

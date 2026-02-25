@@ -178,9 +178,6 @@ function InfoRow({ label, value, highlight = false }: InfoRowProps) {
 
 export default function AdminUsersPage() {
   const [searchQuery, setSearchQuery] = useState("")
-  // Modal position for mobile
-  const [modalPos, setModalPos] = useState<{top: number, left: number, width: number} | null>(null)
-  const cardRefs = useRef<Record<number, HTMLDivElement | null>>({})
   const [selectedRole, setSelectedRole] = useState<"all" | "student" | "teacher" | "admin">("all")
   const [selectedStatus, setSelectedStatus] = useState<"all" | "active" | "inactive" | "pending">("all")
   const [openMenu, setOpenMenu] = useState<number | null>(null)
@@ -191,6 +188,14 @@ export default function AdminUsersPage() {
   const [isEditUserOpen, setIsEditUserOpen] = useState(false)
   const [viewUser, setViewUser] = useState<UserData | null>(null)
   const [editUser, setEditUser] = useState<UserData | null>(null)
+  // Mobile modal state: type, user, and card position
+  const [mobileModal, setMobileModal] = useState<{
+    type: 'view' | 'edit',
+    user: UserData,
+    top: number,
+    left: number,
+    width: number,
+  } | null>(null);
 
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean
@@ -438,6 +443,7 @@ const formatDate = (dateString?: string) => {
   const activeUsers = userList.filter((u) => u.status === "active").length
 
   return (
+
     <div className="min-h-screen w-full">
       <div className="w-full space-y-8">
         {/* Header with Stats */}
@@ -640,21 +646,21 @@ const formatDate = (dateString?: string) => {
                     <td className="py-4 px-6">
                       <button
                        onClick={(e) => {
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    const menuWidth = 192;
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const menuWidth = 192;
 
-                    let left = rect.right - menuWidth;
-                    if (left < 8) left = 8;
-                    if (left + menuWidth > window.innerWidth - 8) {
-                      left = window.innerWidth - menuWidth - 8;
-                    }
+                          let left = rect.right - menuWidth;
+                          if (left < 8) left = 8;
+                          if (left + menuWidth > window.innerWidth - 8) {
+                            left = window.innerWidth - menuWidth - 8;
+                          }
 
-                    setMenuPos({
-                      x: left + window.scrollX,
-                      y: rect.bottom + window.scrollY,
-                    });
-                    setOpenMenu(user.id);
-                  }}
+                          setMenuPos({
+                            x: left + window.scrollX,
+                            y: rect.bottom + window.scrollY,
+                          });
+                          setOpenMenu(user.id);
+                        }}
                         className="p-2 hover:bg-secondary dark:hover:bg-slate-800 rounded-lg transition-smooth"
                       >
                         <MoreVertical size={18} className="text-muted-foreground dark:text-slate-400" />
@@ -679,8 +685,8 @@ const formatDate = (dateString?: string) => {
           {filteredUsers.map((user) => (
             <div
               key={user.id}
-              ref={(el) => { cardRefs.current[user.id] = el; }}
-              className="bg-white/80 dark:bg-slate-900/70 border border-border dark:border-slate-800 rounded-2xl p-4 shadow-sm"
+              data-user-card
+              className="relative bg-white/80 dark:bg-slate-900/70 border border-border dark:border-slate-800 rounded-2xl p-4 shadow-sm"
             >
               {/* Avatar + Name */}
               <div className="flex flex-col items-center text-center gap-2 mb-4">
@@ -689,7 +695,7 @@ const formatDate = (dateString?: string) => {
                     <img
                       src={user.avatar}
                       alt={user.name}
-                      className="w-14 h-14 rounded-full object-cover border-2 border-primary/20"
+                      className="w-14 h-14 rounded-full object-cover border-4 border-primary/20"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                         const fallback = e.currentTarget.nextElementSibling as HTMLElement;
@@ -750,35 +756,110 @@ const formatDate = (dateString?: string) => {
               {/* Actions */}
               <div className="flex justify-center gap-3 mt-4">
                 <button
-                  onClick={() => {
-                    // Lấy vị trí card user
-                    const card = cardRefs.current[user.id]
-                    if (card && window.innerWidth < 1024) {
-                      const rect = card.getBoundingClientRect()
-                      setModalPos({
-                        top: rect.top + window.scrollY,
-                        left: rect.left + window.scrollX,
-                        width: rect.width
-                      })
-                    } else {
-                      setModalPos(null)
-                    }
-                    setViewUser(user)
+                  onClick={e => {
+                    const card = (e.currentTarget.closest('[data-user-card]')) as HTMLElement | null;
+                    if (!card) return;
+                    const rect = card.getBoundingClientRect();
+                    setMobileModal({
+                      type: 'view',
+                      user,
+                      top: rect.bottom + 8,
+                      left: rect.left,
+                      width: rect.width,
+                    });
                   }}
                   className="px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium"
                 >
                   Xem
                 </button>
                 <button
-                  onClick={() => {
-                    setEditUser(user)
-                    setIsEditUserOpen(true)
+                  onClick={e => {
+                    const card = (e.currentTarget.closest('[data-user-card]')) as HTMLElement | null;
+                    if (!card) return;
+                    const rect = card.getBoundingClientRect();
+                    setMobileModal({
+                      type: 'edit',
+                      user,
+                      top: rect.bottom + 8,
+                      left: rect.left,
+                      width: rect.width,
+                    });
                   }}
                   className="px-4 py-2 rounded-lg bg-secondary text-sm font-medium"
                 >
                   Sửa
                 </button>
               </div>
+
+              {/* No per-card modal rendering for mobile, modal is rendered at end of page */}
+                  {/* MOBILE MODAL: Rendered at end of page, fixed and anchored to card */}
+                  {mobileModal && (
+                    <>
+                      {/* Overlay */}
+                      <div
+                        className="fixed inset-0 bg-black/60 z-[9998]"
+                        onClick={() => setMobileModal(null)}
+                      />
+                      {/* Modal */}
+                      <div
+                        className="fixed z-[9999]"
+                        style={{
+                          top: mobileModal.top,
+                          left: mobileModal.left,
+                          width: mobileModal.width,
+                        }}
+                      >
+                        <div className="bg-card dark:bg-slate-900 rounded-2xl shadow-2xl max-h-[85vh] overflow-y-auto">
+                          {mobileModal.type === 'edit' ? (
+                            <EditUserModal
+                              user={mobileModal.user}
+                              onClose={() => setMobileModal(null)}
+                              onSubmit={async (data) => {
+                                await handleUpdateUser(data)
+                                setMobileModal(null)
+                              }}
+                            />
+                          ) : (
+                            <div className="p-4">
+                              <div className="flex flex-col items-center gap-4 mb-4">
+                                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-2xl">
+                                  {mobileModal.user.avatar && !mobileModal.user.avatar.includes('ui-avatars.com') ? (
+                                    <img src={mobileModal.user.avatar} alt={mobileModal.user.name} className="w-20 h-20 rounded-full object-cover border-4 border-primary/20" />
+                                  ) : null}
+                                  <span style={{ display: !mobileModal.user.avatar || mobileModal.user.avatar.includes('ui-avatars.com') ? 'flex' : 'none' }}>
+                                    {mobileModal.user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                                  </span>
+                                </div>
+                                <div className="text-center">
+                                  <h3 className="text-2xl font-bold text-foreground dark:text-white">{mobileModal.user.name}</h3>
+                                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ${mobileModal.user.role === "teacher" ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400" : mobileModal.user.role === "admin" ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"}`}>{mobileModal.user.role === "teacher" ? "Giảng viên" : mobileModal.user.role === "admin" ? "Quản trị viên" : "Học viên"}</span>
+                                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ml-2 ${mobileModal.user.status === "active" ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" : "bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-400"}`}>{mobileModal.user.status === "active" ? "Hoạt động" : mobileModal.user.status === "pending" ? "Chờ xác thực" : "Vô hiệu hóa"}</span>
+                                </div>
+                              </div>
+                              <div className="space-y-2 text-sm mb-4">
+                                <InfoRow label="Số điện thoại" value={mobileModal.user.phone || "Chưa cập nhật"} />
+                                <InfoRow label="Email" value={mobileModal.user.email} />
+                                <InfoRow label="Ngày tham gia" value={mobileModal.user.createdAt ? formatDate(mobileModal.user.createdAt) : "Chưa cập nhật"} />
+                                <InfoRow label="Khóa học" value={mobileModal.user.courses || "Chưa cập nhật"} />
+                                <InfoRow label="Chứng chỉ" value={mobileModal.user.certificates || 0} />
+                                <InfoRow label="Tổng giờ học" value={mobileModal.user.totalHours ? `${mobileModal.user.totalHours}h` : "Chưa cập nhật"} />
+                                {mobileModal.user.address && <InfoRow label="Địa chỉ" value={mobileModal.user.address} />}
+                                {mobileModal.user.bio && <InfoRow label="Giới thiệu" value={mobileModal.user.bio} />}
+                              </div>
+                              <div className="flex gap-3 pt-2 border-t border-border dark:border-slate-800">
+                                <button
+                                  onClick={() => setMobileModal(null)}
+                                  className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900/50"
+                                >
+                                  Đóng
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
             </div>
           ))}
         </div>
@@ -852,395 +933,60 @@ const formatDate = (dateString?: string) => {
         </div>
       )}
 
-      {/* User Detail Modal */}
-      {viewUser && (
-        window.innerWidth < 1024 && modalPos ? (
+      {/* Edit Modal (anchored on mobile) */}
+      {((window.innerWidth < 1024 && mobileModalType === 'edit' && mobileModalPos && isEditUserOpen && editUser) || (window.innerWidth >= 1024 && isEditUserOpen && editUser)) && (
+        <>
           <div
-            className="absolute z-[9999] bg-black/60"
-            style={{
-              top: modalPos.top,
-              left: modalPos.left,
-              width: modalPos.width,
-              minWidth: 280,
-              maxWidth: '95vw',
-              padding: 0,
-              borderRadius: 16,
-            }}
+            className={
+              `z-[9999] ${mobileModalType === 'edit' && mobileModalPos && window.innerWidth < 1024 ? 'fixed left-0 top-0 w-full h-full pointer-events-auto' : 'fixed inset-0 flex items-center justify-center p-4 bg-black/60'}`
+            }
+            style={mobileModalType === 'edit' && mobileModalPos && window.innerWidth < 1024 ? { pointerEvents: 'none' } : {}}
           >
-            <div className="bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl w-full max-h-[90vh] overflow-y-auto relative z-[10000]">
-              {/* Header */}
-              <div className="sticky top-0 bg-card dark:bg-slate-900 border-b border-border dark:border-slate-800 p-6 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-foreground dark:text-white">Thông tin chi tiết người dùng</h2>
-                <button
-                  onClick={() => { setViewUser(null); setModalPos(null); }}
-                  className="p-2 hover:bg-secondary dark:hover:bg-slate-800 rounded-lg transition-smooth"
-                >
-                  <X size={20} className="text-muted-foreground" />
-                </button>
-              </div>
-              {/* Nội dung modal */}
-              <div className="p-6 space-y-6">
-                {/* Profile Header */}
-                <div className="flex items-center gap-4">
-                  <div className="relative w-20 h-20 flex-shrink-0">
-                    {viewUser.avatar && !viewUser.avatar.includes('ui-avatars.com') ? (
-                      <img
-                        src={viewUser.avatar}
-                        alt={viewUser.name}
-                        className="w-20 h-20 rounded-full object-cover border-4 border-primary/20"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                          if (fallback) fallback.style.display = 'flex';
-                        }}
-                      />
-                    ) : null}
-                    <div
-                      className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-2xl"
-                      style={{ display: !viewUser.avatar || viewUser.avatar.includes('ui-avatars.com') ? 'flex' : 'none' }}
-                    >
-                      {viewUser.name ? viewUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : ''}
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-foreground dark:text-white">{viewUser.name || ''}</h3>
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ${
-                        viewUser.role === "teacher"
-                          ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
-                      }`}
-                    >
-                      {viewUser.role === "teacher" ? "Giảng viên" : "Học viên"}
-                    </span>
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ml-2 ${
-                        viewUser.status === "active"
-                          ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                          : "bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-400"
-                      }`}
-                    >
-                      {viewUser.status === "active" ? "Hoạt động" : "Không hoạt động"}
-                    </span>
-                  </div>
-                </div>
-                {/* Contact Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
-                      <Mail size={16} />
-                      <span className="text-sm">Email</span>
-                    </div>
-                    <p className="text-foreground dark:text-white font-medium">{viewUser.email || ''}</p>
-                  </div>
-                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
-                      <Phone size={16} />
-                      <span className="text-sm">Số điện thoại</span>
-                    </div>
-                    <p className="text-foreground dark:text-white font-medium">{viewUser.phone || "Chưa cập nhật"}</p>
-                  </div>
-                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
-                      <Calendar size={16} />
-                      <span className="text-sm">Ngày tham gia</span>
-                    </div>
-                    <p className="text-foreground dark:text-white font-medium">
-                    {viewUser && viewUser.createdAt ? formatDate(viewUser.createdAt) : "Chưa cập nhật"}
-                  </p>
-                  </div>
-                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
-                      <Clock size={16} />
-                      <span className="text-sm">Hoạt động gần nhất</span>
-                    </div>
-                    <p className="text-foreground dark:text-white font-medium">
-                    {viewUser && viewUser.lastLoginAt
-                      ? formatDate(viewUser.lastLoginAt)
-                      : viewUser && viewUser.createdAt
-                        ? `${formatDate(viewUser.createdAt)} (lần đầu)`
-                        : "Chưa cập nhật"}
-                  </p>
-                  </div>
-                </div>
-                {/* Address */}
-                {viewUser.address && (
-                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
-                    <p className="text-muted-foreground dark:text-slate-400 text-sm mb-1">Địa chỉ</p>
-                    <p className="text-foreground dark:text-white font-medium">{viewUser.address}</p>
-                  </div>
-                )}
-                {/* Bio */}
-                {viewUser.bio && (
-                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
-                    <p className="text-muted-foreground dark:text-slate-400 text-sm mb-1">Giới thiệu</p>
-                    <p className="text-foreground dark:text-white">{viewUser.bio}</p>
-                  </div>
-                )}
-                {/* Statistics */}
-                <div>
-                  <h4 className="text-lg font-semibold text-foreground dark:text-white mb-4">Thống kê</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-center">
-                      <BookOpen size={24} className="mx-auto mb-2 text-blue-600 dark:text-blue-400" />
-                      <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{viewUser.courses || 0}</p>
-                      <p className="text-sm text-blue-600 dark:text-blue-400">
-                        {viewUser.role === "teacher" ? "Khóa học dạy" : "Khóa học đăng ký"}
-                      </p>
-                    </div>
-                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4 text-center">
-                      <Award size={24} className="mx-auto mb-2 text-green-600 dark:text-green-400" />
-                      <p className="text-2xl font-bold text-green-700 dark:text-green-300">{viewUser.certificates || 0}</p>
-                      <p className="text-sm text-green-600 dark:text-green-400">Chứng chỉ</p>
-                    </div>
-                    <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4 text-center">
-                      <Clock size={24} className="mx-auto mb-2 text-purple-600 dark:text-purple-400" />
-                      <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">{viewUser.totalHours || 0}h</p>
-                      <p className="text-sm text-purple-600 dark:text-purple-400">Tổng giờ học</p>
-                    </div>
-                    {viewUser.role === "student" && (
-                      <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4 text-center">
-                        <BookOpen size={24} className="mx-auto mb-2 text-orange-600 dark:text-orange-400" />
-                        <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">{viewUser.completedCourses || 0}</p>
-                        <p className="text-sm text-orange-600 dark:text-orange-400">Hoàn thành</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {/* Actions */}
-                <div className="flex gap-3 pt-4 border-t border-border dark:border-slate-800">
-                  <button
-                    onClick={() => {
-                      handleUserAction(viewUser.status === "active" ? "lock" : "unlock", viewUser.id)
-                      setViewUser(null)
-                    }}
-                    className={`flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 ${
-                      viewUser.status === "active"
-                        ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-200 dark:hover:bg-yellow-900/50"
-                        : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50"
-                    }`}
-                  >
-                    {viewUser.status === "active" ? (
-                      <>
-                        <Lock size={18} /> Khóa tài khoản
-                      </>
-                    ) : (
-                      <>
-                        <Unlock size={18} /> Mở khóa tài khoản
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleUserAction("delete", viewUser.id)
-                      setViewUser(null)
-                    }}
-                    className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
-                  >
-                    <Trash2 size={18} /> Xóa tài khoản
-                  </button>
-                </div>
-              </div>
+            {/* Overlay for mobile: click to close */}
+            {mobileModalType === 'edit' && mobileModalPos && window.innerWidth < 1024 && (
+              <div
+                className="fixed left-0 top-0 w-full h-full bg-black/60 z-[9998]"
+                style={{ pointerEvents: 'auto' }}
+                onClick={() => { setIsEditUserOpen(false); setEditUser(null); setMobileModalType(null); setMobileModalPos(null); setMobileModalUserId(null); }}
+              />
+            )}
+            <div
+              className={
+                `bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative z-[10000]`
+              }
+              style={
+                mobileModalType === 'edit' && mobileModalPos && window.innerWidth < 1024
+                  ? {
+                      position: 'fixed',
+                      left: mobileModalPos.x,
+                      top: mobileModalPos.y + 8,
+                      width: mobileModalPos.width,
+                      pointerEvents: 'auto',
+                    }
+                  : {}
+              }
+            >
+              <EditUserModal
+                user={editUser}
+                onClose={() => {
+                  setIsEditUserOpen(false);
+                  setEditUser(null);
+                  setMobileModalType(null);
+                  setMobileModalPos(null);
+                  setMobileModalUserId(null);
+                }}
+                onSubmit={handleUpdateUser}
+              />
             </div>
           </div>
-        ) : (
-          <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
-            <div className="bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative z-[10000]">
-              {/* Header */}
-              <div className="sticky top-0 bg-card dark:bg-slate-900 border-b border-border dark:border-slate-800 p-6 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-foreground dark:text-white">Thông tin chi tiết người dùng</h2>
-                <button
-                  onClick={() => setViewUser(null)}
-                  className="p-2 hover:bg-secondary dark:hover:bg-slate-800 rounded-lg transition-smooth"
-                >
-                  <X size={20} className="text-muted-foreground" />
-                </button>
-              </div>
-              {/* Nội dung modal - giống như trên */}
-              <div className="p-6 space-y-6">
-                {/* Profile Header */}
-                <div className="flex items-center gap-4">
-                  <div className="relative w-20 h-20 flex-shrink-0">
-                    {viewUser && viewUser.avatar && !viewUser.avatar.includes('ui-avatars.com') ? (
-                      <img
-                        src={viewUser.avatar}
-                        alt={viewUser.name}
-                        className="w-20 h-20 rounded-full object-cover border-4 border-primary/20"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                          if (fallback) fallback.style.display = 'flex';
-                        }}
-                      />
-                    ) : null}
-                    <div
-                      className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-2xl"
-                      style={{ display: viewUser && (!viewUser.avatar || viewUser.avatar.includes('ui-avatars.com')) ? 'flex' : 'none' }}
-                    >
-                      {viewUser ? viewUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : ''}
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-foreground dark:text-white">{viewUser.name}</h3>
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ${
-                        viewUser.role === "teacher"
-                          ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
-                      }`}
-                    >
-                      {viewUser.role === "teacher" ? "Giảng viên" : "Học viên"}
-                    </span>
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ml-2 ${
-                        viewUser.status === "active"
-                          ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                          : "bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-400"
-                      }`}
-                    >
-                      {viewUser.status === "active" ? "Hoạt động" : "Không hoạt động"}
-                    </span>
-                  </div>
-                </div>
-                {/* Contact Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
-                      <Mail size={16} />
-                      <span className="text-sm">Email</span>
-                    </div>
-                    <p className="text-foreground dark:text-white font-medium">{viewUser.email}</p>
-                  </div>
-                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
-                      <Phone size={16} />
-                      <span className="text-sm">Số điện thoại</span>
-                    </div>
-                    <p className="text-foreground dark:text-white font-medium">{viewUser.phone || "Chưa cập nhật"}</p>
-                  </div>
-                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
-                      <Calendar size={16} />
-                      <span className="text-sm">Ngày tham gia</span>
-                    </div>
-                    <p className="text-foreground dark:text-white font-medium">
-                    {viewUser && viewUser.createdAt ? formatDate(viewUser.createdAt) : "Chưa cập nhật"}
-                  </p>
-                  </div>
-                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
-                      <Clock size={16} />
-                      <span className="text-sm">Hoạt động gần nhất</span>
-                    </div>
-                    <p className="text-foreground dark:text-white font-medium">
-                    {viewUser && viewUser.lastLoginAt
-                      ? formatDate(viewUser.lastLoginAt)
-                      : viewUser && viewUser.createdAt
-                        ? `${formatDate(viewUser.createdAt)} (lần đầu)`
-                        : "Chưa cập nhật"}
-                  </p>
-                  </div>
-                </div>
-                {/* Address */}
-                {viewUser.address && (
-                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
-                    <p className="text-muted-foreground dark:text-slate-400 text-sm mb-1">Địa chỉ</p>
-                    <p className="text-foreground dark:text-white font-medium">{viewUser.address}</p>
-                  </div>
-                )}
-                {/* Bio */}
-                {viewUser.bio && (
-                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
-                    <p className="text-muted-foreground dark:text-slate-400 text-sm mb-1">Giới thiệu</p>
-                    <p className="text-foreground dark:text-white">{viewUser.bio}</p>
-                  </div>
-                )}
-                {/* Statistics */}
-                <div>
-                  <h4 className="text-lg font-semibold text-foreground dark:text-white mb-4">Thống kê</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-center">
-                      <BookOpen size={24} className="mx-auto mb-2 text-blue-600 dark:text-blue-400" />
-                      <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{viewUser.courses || 0}</p>
-                      <p className="text-sm text-blue-600 dark:text-blue-400">
-                        {viewUser.role === "teacher" ? "Khóa học dạy" : "Khóa học đăng ký"}
-                      </p>
-                    </div>
-                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4 text-center">
-                      <Award size={24} className="mx-auto mb-2 text-green-600 dark:text-green-400" />
-                      <p className="text-2xl font-bold text-green-700 dark:text-green-300">{viewUser.certificates || 0}</p>
-                      <p className="text-sm text-green-600 dark:text-green-400">Chứng chỉ</p>
-                    </div>
-                    <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4 text-center">
-                      <Clock size={24} className="mx-auto mb-2 text-purple-600 dark:text-purple-400" />
-                      <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">{viewUser.totalHours || 0}h</p>
-                      <p className="text-sm text-purple-600 dark:text-purple-400">Tổng giờ học</p>
-                    </div>
-                    {viewUser.role === "student" && (
-                      <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4 text-center">
-                        <BookOpen size={24} className="mx-auto mb-2 text-orange-600 dark:text-orange-400" />
-                        <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">{viewUser.completedCourses || 0}</p>
-                        <p className="text-sm text-orange-600 dark:text-orange-400">Hoàn thành</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {/* Actions */}
-                <div className="flex gap-3 pt-4 border-t border-border dark:border-slate-800">
-                  <button
-                    onClick={() => {
-                      handleUserAction(viewUser.status === "active" ? "lock" : "unlock", viewUser.id)
-                      setViewUser(null)
-                    }}
-                    className={`flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 ${
-                      viewUser.status === "active"
-                        ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-200 dark:hover:bg-yellow-900/50"
-                        : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50"
-                    }`}
-                  >
-                    {viewUser.status === "active" ? (
-                      <>
-                        <Lock size={18} /> Khóa tài khoản
-                      </>
-                    ) : (
-                      <>
-                        <Unlock size={18} /> Mở khóa tài khoản
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleUserAction("delete", viewUser.id)
-                      setViewUser(null)
-                    }}
-                    className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
-                  >
-                    <Trash2 size={18} /> Xóa tài khoản
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )
+        </>
       )}
-{isEditUserOpen && editUser && (
-  <EditUserModal
-    user={editUser}
-    onClose={() => {
-      setIsEditUserOpen(false)
-      setEditUser(null)
-    }}
-    onSubmit={handleUpdateUser}
-  />
-)}
-
+  
       <AddUserModal
   isOpen={isAddUserOpen}
   onClose={() => setIsAddUserOpen(false)}
   onAdd={handleAddUser}
 />
-
-
       <ConfirmDialog
         isOpen={confirmDialog.isOpen}
         onClose={() => setConfirmDialog({ isOpen: false, action: "" })}

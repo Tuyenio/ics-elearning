@@ -485,6 +485,29 @@ export default function AdminCoursesPage() {
         </div>
       )}
 
+      {/* View Course Detail Modal */}
+        // Close menu on outside click or Escape
+        useEffect(() => {
+          if (!openMenu || !menuPos) return;
+          function handle(e: MouseEvent) {
+            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+              setOpenMenu(null);
+              setMenuPos(null);
+            }
+          }
+          function handleKey(e: KeyboardEvent) {
+            if (e.key === "Escape") {
+              setOpenMenu(null);
+              setMenuPos(null);
+            }
+          }
+          document.addEventListener("mousedown", handle);
+          document.addEventListener("keydown", handleKey);
+          return () => {
+            document.removeEventListener("mousedown", handle);
+            document.removeEventListener("keydown", handleKey);
+          };
+        }, [openMenu, menuPos]);
       {viewMode === "view" && selectedCourse && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
           <div className="bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">

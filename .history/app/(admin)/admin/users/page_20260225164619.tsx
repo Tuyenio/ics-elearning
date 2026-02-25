@@ -180,7 +180,7 @@ export default function AdminUsersPage() {
   const [searchQuery, setSearchQuery] = useState("")
   // Modal position for mobile
   const [modalPos, setModalPos] = useState<{top: number, left: number, width: number} | null>(null)
-  const cardRefs = useRef<Record<number, HTMLDivElement | null>>({})
+  const cardRefs = useRef<{[key: number]: HTMLDivElement | null}>({})
   const [selectedRole, setSelectedRole] = useState<"all" | "student" | "teacher" | "admin">("all")
   const [selectedStatus, setSelectedStatus] = useState<"all" | "active" | "inactive" | "pending">("all")
   const [openMenu, setOpenMenu] = useState<number | null>(null)
@@ -438,6 +438,7 @@ const formatDate = (dateString?: string) => {
   const activeUsers = userList.filter((u) => u.status === "active").length
 
   return (
+
     <div className="min-h-screen w-full">
       <div className="w-full space-y-8">
         {/* Header with Stats */}
@@ -679,7 +680,7 @@ const formatDate = (dateString?: string) => {
           {filteredUsers.map((user) => (
             <div
               key={user.id}
-              ref={(el) => { cardRefs.current[user.id] = el; }}
+              ref={el => cardRefs.current[user.id] = el}
               className="bg-white/80 dark:bg-slate-900/70 border border-border dark:border-slate-800 rounded-2xl p-4 shadow-sm"
             >
               {/* Avatar + Name */}
@@ -880,6 +881,7 @@ const formatDate = (dateString?: string) => {
               </div>
               {/* Nội dung modal */}
               <div className="p-6 space-y-6">
+                {/* ...copy phần nội dung modal từ modal cũ... */}
                 {/* Profile Header */}
                 <div className="flex items-center gap-4">
                   <div className="relative w-20 h-20 flex-shrink-0">
@@ -899,185 +901,7 @@ const formatDate = (dateString?: string) => {
                       className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-2xl"
                       style={{ display: !viewUser.avatar || viewUser.avatar.includes('ui-avatars.com') ? 'flex' : 'none' }}
                     >
-                      {viewUser.name ? viewUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : ''}
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-foreground dark:text-white">{viewUser.name || ''}</h3>
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ${
-                        viewUser.role === "teacher"
-                          ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
-                      }`}
-                    >
-                      {viewUser.role === "teacher" ? "Giảng viên" : "Học viên"}
-                    </span>
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ml-2 ${
-                        viewUser.status === "active"
-                          ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                          : "bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-400"
-                      }`}
-                    >
-                      {viewUser.status === "active" ? "Hoạt động" : "Không hoạt động"}
-                    </span>
-                  </div>
-                </div>
-                {/* Contact Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
-                      <Mail size={16} />
-                      <span className="text-sm">Email</span>
-                    </div>
-                    <p className="text-foreground dark:text-white font-medium">{viewUser.email || ''}</p>
-                  </div>
-                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
-                      <Phone size={16} />
-                      <span className="text-sm">Số điện thoại</span>
-                    </div>
-                    <p className="text-foreground dark:text-white font-medium">{viewUser.phone || "Chưa cập nhật"}</p>
-                  </div>
-                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
-                      <Calendar size={16} />
-                      <span className="text-sm">Ngày tham gia</span>
-                    </div>
-                    <p className="text-foreground dark:text-white font-medium">
-                    {viewUser && viewUser.createdAt ? formatDate(viewUser.createdAt) : "Chưa cập nhật"}
-                  </p>
-                  </div>
-                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
-                      <Clock size={16} />
-                      <span className="text-sm">Hoạt động gần nhất</span>
-                    </div>
-                    <p className="text-foreground dark:text-white font-medium">
-                    {viewUser && viewUser.lastLoginAt
-                      ? formatDate(viewUser.lastLoginAt)
-                      : viewUser && viewUser.createdAt
-                        ? `${formatDate(viewUser.createdAt)} (lần đầu)`
-                        : "Chưa cập nhật"}
-                  </p>
-                  </div>
-                </div>
-                {/* Address */}
-                {viewUser.address && (
-                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
-                    <p className="text-muted-foreground dark:text-slate-400 text-sm mb-1">Địa chỉ</p>
-                    <p className="text-foreground dark:text-white font-medium">{viewUser.address}</p>
-                  </div>
-                )}
-                {/* Bio */}
-                {viewUser.bio && (
-                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
-                    <p className="text-muted-foreground dark:text-slate-400 text-sm mb-1">Giới thiệu</p>
-                    <p className="text-foreground dark:text-white">{viewUser.bio}</p>
-                  </div>
-                )}
-                {/* Statistics */}
-                <div>
-                  <h4 className="text-lg font-semibold text-foreground dark:text-white mb-4">Thống kê</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-center">
-                      <BookOpen size={24} className="mx-auto mb-2 text-blue-600 dark:text-blue-400" />
-                      <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{viewUser.courses || 0}</p>
-                      <p className="text-sm text-blue-600 dark:text-blue-400">
-                        {viewUser.role === "teacher" ? "Khóa học dạy" : "Khóa học đăng ký"}
-                      </p>
-                    </div>
-                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4 text-center">
-                      <Award size={24} className="mx-auto mb-2 text-green-600 dark:text-green-400" />
-                      <p className="text-2xl font-bold text-green-700 dark:text-green-300">{viewUser.certificates || 0}</p>
-                      <p className="text-sm text-green-600 dark:text-green-400">Chứng chỉ</p>
-                    </div>
-                    <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4 text-center">
-                      <Clock size={24} className="mx-auto mb-2 text-purple-600 dark:text-purple-400" />
-                      <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">{viewUser.totalHours || 0}h</p>
-                      <p className="text-sm text-purple-600 dark:text-purple-400">Tổng giờ học</p>
-                    </div>
-                    {viewUser.role === "student" && (
-                      <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4 text-center">
-                        <BookOpen size={24} className="mx-auto mb-2 text-orange-600 dark:text-orange-400" />
-                        <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">{viewUser.completedCourses || 0}</p>
-                        <p className="text-sm text-orange-600 dark:text-orange-400">Hoàn thành</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {/* Actions */}
-                <div className="flex gap-3 pt-4 border-t border-border dark:border-slate-800">
-                  <button
-                    onClick={() => {
-                      handleUserAction(viewUser.status === "active" ? "lock" : "unlock", viewUser.id)
-                      setViewUser(null)
-                    }}
-                    className={`flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 ${
-                      viewUser.status === "active"
-                        ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-200 dark:hover:bg-yellow-900/50"
-                        : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50"
-                    }`}
-                  >
-                    {viewUser.status === "active" ? (
-                      <>
-                        <Lock size={18} /> Khóa tài khoản
-                      </>
-                    ) : (
-                      <>
-                        <Unlock size={18} /> Mở khóa tài khoản
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleUserAction("delete", viewUser.id)
-                      setViewUser(null)
-                    }}
-                    className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
-                  >
-                    <Trash2 size={18} /> Xóa tài khoản
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
-            <div className="bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative z-[10000]">
-              {/* Header */}
-              <div className="sticky top-0 bg-card dark:bg-slate-900 border-b border-border dark:border-slate-800 p-6 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-foreground dark:text-white">Thông tin chi tiết người dùng</h2>
-                <button
-                  onClick={() => setViewUser(null)}
-                  className="p-2 hover:bg-secondary dark:hover:bg-slate-800 rounded-lg transition-smooth"
-                >
-                  <X size={20} className="text-muted-foreground" />
-                </button>
-              </div>
-              {/* Nội dung modal - giống như trên */}
-              <div className="p-6 space-y-6">
-                {/* Profile Header */}
-                <div className="flex items-center gap-4">
-                  <div className="relative w-20 h-20 flex-shrink-0">
-                    {viewUser && viewUser.avatar && !viewUser.avatar.includes('ui-avatars.com') ? (
-                      <img
-                        src={viewUser.avatar}
-                        alt={viewUser.name}
-                        className="w-20 h-20 rounded-full object-cover border-4 border-primary/20"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                          if (fallback) fallback.style.display = 'flex';
-                        }}
-                      />
-                    ) : null}
-                    <div
-                      className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-2xl"
-                      style={{ display: viewUser && (!viewUser.avatar || viewUser.avatar.includes('ui-avatars.com')) ? 'flex' : 'none' }}
-                    >
-                      {viewUser ? viewUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : ''}
+                      {viewUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
                     </div>
                   </div>
                   <div>
@@ -1102,6 +926,7 @@ const formatDate = (dateString?: string) => {
                     </span>
                   </div>
                 </div>
+                {/* ...copy các phần còn lại như contact info, address, bio, statistics, actions... */}
                 {/* Contact Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
@@ -1124,7 +949,7 @@ const formatDate = (dateString?: string) => {
                       <span className="text-sm">Ngày tham gia</span>
                     </div>
                     <p className="text-foreground dark:text-white font-medium">
-                    {viewUser && viewUser.createdAt ? formatDate(viewUser.createdAt) : "Chưa cập nhật"}
+                    {viewUser.createdAt ? formatDate(viewUser.createdAt) : "Chưa cập nhật"}
                   </p>
                   </div>
                   <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
@@ -1133,9 +958,9 @@ const formatDate = (dateString?: string) => {
                       <span className="text-sm">Hoạt động gần nhất</span>
                     </div>
                     <p className="text-foreground dark:text-white font-medium">
-                    {viewUser && viewUser.lastLoginAt
+                    {viewUser.lastLoginAt
                       ? formatDate(viewUser.lastLoginAt)
-                      : viewUser && viewUser.createdAt
+                      : viewUser.createdAt
                         ? `${formatDate(viewUser.createdAt)} (lần đầu)`
                         : "Chưa cập nhật"}
                   </p>
@@ -1161,25 +986,207 @@ const formatDate = (dateString?: string) => {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-center">
                       <BookOpen size={24} className="mx-auto mb-2 text-blue-600 dark:text-blue-400" />
-                      <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{viewUser.courses || 0}</p>
+                      <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{viewUser.courses}</p>
                       <p className="text-sm text-blue-600 dark:text-blue-400">
                         {viewUser.role === "teacher" ? "Khóa học dạy" : "Khóa học đăng ký"}
                       </p>
                     </div>
                     <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4 text-center">
                       <Award size={24} className="mx-auto mb-2 text-green-600 dark:text-green-400" />
-                      <p className="text-2xl font-bold text-green-700 dark:text-green-300">{viewUser.certificates || 0}</p>
+                      <p className="text-2xl font-bold text-green-700 dark:text-green-300">{viewUser.certificates}</p>
                       <p className="text-sm text-green-600 dark:text-green-400">Chứng chỉ</p>
                     </div>
                     <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4 text-center">
                       <Clock size={24} className="mx-auto mb-2 text-purple-600 dark:text-purple-400" />
-                      <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">{viewUser.totalHours || 0}h</p>
+                      <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">{viewUser.totalHours}h</p>
                       <p className="text-sm text-purple-600 dark:text-purple-400">Tổng giờ học</p>
                     </div>
                     {viewUser.role === "student" && (
                       <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4 text-center">
                         <BookOpen size={24} className="mx-auto mb-2 text-orange-600 dark:text-orange-400" />
-                        <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">{viewUser.completedCourses || 0}</p>
+                        <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">{viewUser.completedCourses}</p>
+                        <p className="text-sm text-orange-600 dark:text-orange-400">Hoàn thành</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {/* Actions */}
+                <div className="flex gap-3 pt-4 border-t border-border dark:border-slate-800">
+                  <button
+                    onClick={() => {
+                      handleUserAction(viewUser.status === "active" ? "lock" : "unlock", viewUser.id)
+                      setViewUser(null)
+                      setModalPos(null)
+                    }}
+                    className={`flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 ${
+                      viewUser.status === "active"
+                        ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-200 dark:hover:bg-yellow-900/50"
+                        : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50"
+                    }`}
+                  >
+                    {viewUser.status === "active" ? (
+                      <>
+                        <Lock size={18} /> Khóa tài khoản
+                      </>
+                    ) : (
+                      <>
+                        <Unlock size={18} /> Mở khóa tài khoản
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleUserAction("delete", viewUser.id)
+                      setViewUser(null)
+                      setModalPos(null)
+                    }}
+                    className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
+                  >
+                    <Trash2 size={18} /> Xóa tài khoản
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
+            <div className="bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative z-[10000]">
+              {/* Header */}
+              <div className="sticky top-0 bg-card dark:bg-slate-900 border-b border-border dark:border-slate-800 p-6 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-foreground dark:text-white">Thông tin chi tiết người dùng</h2>
+                <button
+                  onClick={() => setViewUser(null)}
+                  className="p-2 hover:bg-secondary dark:hover:bg-slate-800 rounded-lg transition-smooth"
+                >
+                  <X size={20} className="text-muted-foreground" />
+                </button>
+              </div>
+              {/* Nội dung modal - giống như trên */}
+              <div className="p-6 space-y-6">
+                {/* ...copy phần nội dung modal như trên... */}
+                {/* Profile Header */}
+                <div className="flex items-center gap-4">
+                  <div className="relative w-20 h-20 flex-shrink-0">
+                    {viewUser.avatar && !viewUser.avatar.includes('ui-avatars.com') ? (
+                      <img
+                        src={viewUser.avatar}
+                        alt={viewUser.name}
+                        className="w-20 h-20 rounded-full object-cover border-4 border-primary/20"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                          if (fallback) fallback.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div
+                      className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-2xl"
+                      style={{ display: !viewUser.avatar || viewUser.avatar.includes('ui-avatars.com') ? 'flex' : 'none' }}
+                    >
+                      {viewUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-foreground dark:text-white">{viewUser.name}</h3>
+                    <span
+                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ${
+                        viewUser.role === "teacher"
+                          ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                      }`}
+                    >
+                      {viewUser.role === "teacher" ? "Giảng viên" : "Học viên"}
+                    </span>
+                    <span
+                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ml-2 ${
+                        viewUser.status === "active"
+                          ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                          : "bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-400"
+                      }`}
+                    >
+                      {viewUser.status === "active" ? "Hoạt động" : "Không hoạt động"}
+                    </span>
+                  </div>
+                </div>
+                {/* ...copy các phần còn lại như contact info, address, bio, statistics, actions... */}
+                {/* Contact Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
+                    <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
+                      <Mail size={16} />
+                      <span className="text-sm">Email</span>
+                    </div>
+                    <p className="text-foreground dark:text-white font-medium">{viewUser.email}</p>
+                  </div>
+                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
+                    <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
+                      <Phone size={16} />
+                      <span className="text-sm">Số điện thoại</span>
+                    </div>
+                    <p className="text-foreground dark:text-white font-medium">{viewUser.phone || "Chưa cập nhật"}</p>
+                  </div>
+                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
+                    <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
+                      <Calendar size={16} />
+                      <span className="text-sm">Ngày tham gia</span>
+                    </div>
+                    <p className="text-foreground dark:text-white font-medium">
+                    {viewUser.createdAt ? formatDate(viewUser.createdAt) : "Chưa cập nhật"}
+                  </p>
+                  </div>
+                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
+                    <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
+                      <Clock size={16} />
+                      <span className="text-sm">Hoạt động gần nhất</span>
+                    </div>
+                    <p className="text-foreground dark:text-white font-medium">
+                    {viewUser.lastLoginAt
+                      ? formatDate(viewUser.lastLoginAt)
+                      : viewUser.createdAt
+                        ? `${formatDate(viewUser.createdAt)} (lần đầu)`
+                        : "Chưa cập nhật"}
+                  </p>
+                  </div>
+                </div>
+                {/* Address */}
+                {viewUser.address && (
+                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
+                    <p className="text-muted-foreground dark:text-slate-400 text-sm mb-1">Địa chỉ</p>
+                    <p className="text-foreground dark:text-white font-medium">{viewUser.address}</p>
+                  </div>
+                )}
+                {/* Bio */}
+                {viewUser.bio && (
+                  <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
+                    <p className="text-muted-foreground dark:text-slate-400 text-sm mb-1">Giới thiệu</p>
+                    <p className="text-foreground dark:text-white">{viewUser.bio}</p>
+                  </div>
+                )}
+                {/* Statistics */}
+                <div>
+                  <h4 className="text-lg font-semibold text-foreground dark:text-white mb-4">Thống kê</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-center">
+                      <BookOpen size={24} className="mx-auto mb-2 text-blue-600 dark:text-blue-400" />
+                      <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{viewUser.courses}</p>
+                      <p className="text-sm text-blue-600 dark:text-blue-400">
+                        {viewUser.role === "teacher" ? "Khóa học dạy" : "Khóa học đăng ký"}
+                      </p>
+                    </div>
+                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4 text-center">
+                      <Award size={24} className="mx-auto mb-2 text-green-600 dark:text-green-400" />
+                      <p className="text-2xl font-bold text-green-700 dark:text-green-300">{viewUser.certificates}</p>
+                      <p className="text-sm text-green-600 dark:text-green-400">Chứng chỉ</p>
+                    </div>
+                    <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4 text-center">
+                      <Clock size={24} className="mx-auto mb-2 text-purple-600 dark:text-purple-400" />
+                      <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">{viewUser.totalHours}h</p>
+                      <p className="text-sm text-purple-600 dark:text-purple-400">Tổng giờ học</p>
+                    </div>
+                    {viewUser.role === "student" && (
+                      <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4 text-center">
+                        <BookOpen size={24} className="mx-auto mb-2 text-orange-600 dark:text-orange-400" />
+                        <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">{viewUser.completedCourses}</p>
                         <p className="text-sm text-orange-600 dark:text-orange-400">Hoàn thành</p>
                       </div>
                     )}
@@ -1222,6 +1229,188 @@ const formatDate = (dateString?: string) => {
             </div>
           </div>
         )
+      )}
+            {/* Header */}
+            <div className="sticky top-0 bg-card dark:bg-slate-900 border-b border-border dark:border-slate-800 p-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-foreground dark:text-white">Thông tin chi tiết người dùng</h2>
+              <button
+                onClick={() => setViewUser(null)}
+                className="p-2 hover:bg-secondary dark:hover:bg-slate-800 rounded-lg transition-smooth"
+              >
+                <X size={20} className="text-muted-foreground" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Profile Header */}
+              <div className="flex items-center gap-4">
+                <div className="relative w-20 h-20 flex-shrink-0">
+                  {viewUser.avatar && !viewUser.avatar.includes('ui-avatars.com') ? (
+                    <img
+                      src={viewUser.avatar}
+                      alt={viewUser.name}
+                      className="w-20 h-20 rounded-full object-cover border-4 border-primary/20"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div
+                    className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-2xl"
+                    style={{ display: !viewUser.avatar || viewUser.avatar.includes('ui-avatars.com') ? 'flex' : 'none' }}
+                  >
+                    {viewUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-foreground dark:text-white">{viewUser.name}</h3>
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ${
+                      viewUser.role === "teacher"
+                        ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                    }`}
+                  >
+                    {viewUser.role === "teacher" ? "Giảng viên" : "Học viên"}
+                  </span>
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ml-2 ${
+                      viewUser.status === "active"
+                        ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                        : "bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-400"
+                    }`}
+                  >
+                    {viewUser.status === "active" ? "Hoạt động" : "Không hoạt động"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Contact Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
+                  <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
+                    <Mail size={16} />
+                    <span className="text-sm">Email</span>
+                  </div>
+                  <p className="text-foreground dark:text-white font-medium">{viewUser.email}</p>
+                </div>
+                <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
+                  <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
+                    <Phone size={16} />
+                    <span className="text-sm">Số điện thoại</span>
+                  </div>
+                  <p className="text-foreground dark:text-white font-medium">{viewUser.phone || "Chưa cập nhật"}</p>
+                </div>
+                <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
+                  <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
+                    <Calendar size={16} />
+                    <span className="text-sm">Ngày tham gia</span>
+                  </div>
+                  <p className="text-foreground dark:text-white font-medium">
+                  {viewUser.createdAt ? formatDate(viewUser.createdAt) : "Chưa cập nhật"}
+                </p>
+                </div>
+                <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
+                  <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
+                    <Clock size={16} />
+                    <span className="text-sm">Hoạt động gần nhất</span>
+                  </div>
+                  <p className="text-foreground dark:text-white font-medium">
+                  {viewUser.lastLoginAt
+                    ? formatDate(viewUser.lastLoginAt)
+                    : viewUser.createdAt
+                      ? `${formatDate(viewUser.createdAt)} (lần đầu)`
+                      : "Chưa cập nhật"}
+                </p>
+                </div>
+              </div>
+
+              {/* Address */}
+              {viewUser.address && (
+                <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
+                  <p className="text-muted-foreground dark:text-slate-400 text-sm mb-1">Địa chỉ</p>
+                  <p className="text-foreground dark:text-white font-medium">{viewUser.address}</p>
+                </div>
+              )}
+
+              {/* Bio */}
+              {viewUser.bio && (
+                <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
+                  <p className="text-muted-foreground dark:text-slate-400 text-sm mb-1">Giới thiệu</p>
+                  <p className="text-foreground dark:text-white">{viewUser.bio}</p>
+                </div>
+              )}
+
+              {/* Statistics */}
+              <div>
+                <h4 className="text-lg font-semibold text-foreground dark:text-white mb-4">Thống kê</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-center">
+                    <BookOpen size={24} className="mx-auto mb-2 text-blue-600 dark:text-blue-400" />
+                    <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{viewUser.courses}</p>
+                    <p className="text-sm text-blue-600 dark:text-blue-400">
+                      {viewUser.role === "teacher" ? "Khóa học dạy" : "Khóa học đăng ký"}
+                    </p>
+                  </div>
+                  <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4 text-center">
+                    <Award size={24} className="mx-auto mb-2 text-green-600 dark:text-green-400" />
+                    <p className="text-2xl font-bold text-green-700 dark:text-green-300">{viewUser.certificates}</p>
+                    <p className="text-sm text-green-600 dark:text-green-400">Chứng chỉ</p>
+                  </div>
+                  <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4 text-center">
+                    <Clock size={24} className="mx-auto mb-2 text-purple-600 dark:text-purple-400" />
+                    <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">{viewUser.totalHours}h</p>
+                    <p className="text-sm text-purple-600 dark:text-purple-400">Tổng giờ học</p>
+                  </div>
+                  {viewUser.role === "student" && (
+                    <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4 text-center">
+                      <BookOpen size={24} className="mx-auto mb-2 text-orange-600 dark:text-orange-400" />
+                      <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">{viewUser.completedCourses}</p>
+                      <p className="text-sm text-orange-600 dark:text-orange-400">Hoàn thành</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-4 border-t border-border dark:border-slate-800">
+                <button
+                  onClick={() => {
+                    handleUserAction(viewUser.status === "active" ? "lock" : "unlock", viewUser.id)
+                    setViewUser(null)
+                  }}
+                  className={`flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 ${
+                    viewUser.status === "active"
+                      ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-200 dark:hover:bg-yellow-900/50"
+                      : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50"
+                  }`}
+                >
+                  {viewUser.status === "active" ? (
+                    <>
+                      <Lock size={18} /> Khóa tài khoản
+                    </>
+                  ) : (
+                    <>
+                      <Unlock size={18} /> Mở khóa tài khoản
+                    </>
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => {
+                    handleUserAction("delete", viewUser.id)
+                    setViewUser(null)
+                  }}
+                  className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
+                >
+                  <Trash2 size={18} /> Xóa tài khoản
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 {isEditUserOpen && editUser && (
   <EditUserModal
