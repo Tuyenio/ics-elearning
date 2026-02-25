@@ -1,22 +1,3 @@
-/* Modal overlay and content pointer-events fix */
-.modal-overlay {
-  pointer-events: none;
-}
-.modal-content, .modal-content-scroll {
-  pointer-events: auto;
-  z-index: 10001;
-}
-/* Modal content scroll fix for mobile */
-.modal-content-scroll {
-  touch-action: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-@media (max-width: 640px) {
-  .modal-content-scroll {
-    max-height: 80vh !important;
-  }
-}
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -357,6 +338,31 @@ body[data-chatbot="header"] #gim-bot-tool-bot-container {
   transform: translateY(0);
   pointer-events: auto;
 }
+#region Chatbot Responsive Fix
+/* Ẩn hoàn toàn các lớp chatbot trên mobile khi chưa mở */
+@media (max-width: 768px) {
+  #gim-bot-tool-button-container,
+  #gim-bot-tool-button,
+  #gim-bot-tool-bot-container,
+  #gim-chatbot-popup {
+    display: none !important;
+    pointer-events: none !important;
+  }
+  /* Khi mở popup thì chỉ hiện đúng vùng, không phủ toàn màn hình */
+  #gim-chatbot-popup.is-visible {
+    display: flex !important;
+    pointer-events: auto !important;
+    /* Đảm bảo overlay không phủ toàn màn hình */
+    max-width: 95vw;
+    max-height: 80vh;
+    right: 8px;
+    left: auto;
+    bottom: 16px;
+    top: auto;
+    z-index: 10001;
+  }
+}
+#endregion
 
 #gim-chatbot-popup-close {
   border: 0;

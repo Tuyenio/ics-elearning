@@ -21,13 +21,14 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, title, children, size = "md" }: ModalProps) {
-  // Modal open counter to handle multiple modals, only set overflow
+  // Modal open counter to handle multiple modals
   React.useEffect(() => {
     if (typeof window === 'undefined') return;
     if (!window.__modalOpenCount) window.__modalOpenCount = 0;
     if (isOpen) {
       window.__modalOpenCount++;
       document.body.style.overflow = 'hidden';
+      document.body.style.pointerEvents = 'auto';
     }
     return () => {
       if (isOpen) {
@@ -35,6 +36,7 @@ export function Modal({ isOpen, onClose, title, children, size = "md" }: ModalPr
           window.__modalOpenCount--;
           if (window.__modalOpenCount <= 0) {
             document.body.style.overflow = '';
+            document.body.style.pointerEvents = '';
             window.__modalOpenCount = 0;
           }
         }
@@ -50,13 +52,9 @@ export function Modal({ isOpen, onClose, title, children, size = "md" }: ModalPr
   }
 
   return (
-    <div
-      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div
         className={`bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl ${sizeClasses[size]} w-full`}
-        onClick={e => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border dark:border-slate-800">
@@ -71,7 +69,7 @@ export function Modal({ isOpen, onClose, title, children, size = "md" }: ModalPr
 
         {/* Content */}
         <div
-          className="p-6 max-h-[80dvh] overflow-y-auto modal-content-scroll"
+          className="p-6 max-h-[calc(100vh-200px)] overflow-y-auto modal-content-scroll"
         >
           {children}
         </div>

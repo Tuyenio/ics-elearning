@@ -1,20 +1,18 @@
-/* Modal overlay and content pointer-events fix */
-.modal-overlay {
-  pointer-events: none;
-}
-.modal-content, .modal-content-scroll {
-  pointer-events: auto;
-  z-index: 10001;
-}
-/* Modal content scroll fix for mobile */
-.modal-content-scroll {
-  touch-action: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-@media (max-width: 640px) {
-  .modal-content-scroll {
-    max-height: 80vh !important;
+@media (max-width: 768px) {
+  /* Ẩn mọi lớp có background tối hoặc blur trên mobile để debug */
+  [class*="bg-dark"],
+  [class*="bg-background"],
+  [class*="bg-slate"],
+  [class*="backdrop-blur"],
+  [class*="glass"],
+  [class*="overlay"],
+  [class*="modal"],
+  [class*="block"],
+  [class*="screen"],
+  [class*="full"],
+  [class*="hidden"] {
+    display: none !important;
+    pointer-events: none !important;
   }
 }
 @import "tailwindcss";
