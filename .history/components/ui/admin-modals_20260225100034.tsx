@@ -31,12 +31,10 @@ export function Modal({ isOpen, onClose, title, children, size = "md" }: ModalPr
     }
     return () => {
       if (isOpen) {
-        if (typeof window.__modalOpenCount === "number") {
-          window.__modalOpenCount--;
-          if (window.__modalOpenCount <= 0) {
-            document.body.style.overflow = '';
-            window.__modalOpenCount = 0;
-          }
+        window.__modalOpenCount--;
+        if (window.__modalOpenCount <= 0) {
+          document.body.style.overflow = '';
+          window.__modalOpenCount = 0;
         }
       }
     };

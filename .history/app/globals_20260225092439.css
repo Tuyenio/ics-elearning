@@ -1,22 +1,3 @@
-/* Modal overlay and content pointer-events fix */
-.modal-overlay {
-  pointer-events: none;
-}
-.modal-content, .modal-content-scroll {
-  pointer-events: auto;
-  z-index: 10001;
-}
-/* Modal content scroll fix for mobile */
-.modal-content-scroll {
-  touch-action: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-@media (max-width: 640px) {
-  .modal-content-scroll {
-    max-height: 80vh !important;
-  }
-}
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -271,58 +252,6 @@
   }
 }
 
-@media (update: slow), (prefers-reduced-data: reduce) {
-  .stagger-items :is(.grid, [class*="grid-cols-"], [class*="space-y-"], ul, ol, [role="list"], tbody) > * {
-    --stagger-duration: 0.26s;
-    --stagger-base: 8ms;
-    --stagger-step: 16ms;
-    --rise-y: 3px;
-    --rise-scale: 0.995;
-  }
-
-  .hover-lift:hover {
-    transform: translateY(-1px);
-  }
-
-  .hover-glow:hover {
-    animation: none;
-  }
-}
-
-.motion-lite .stagger-items :is(.grid, [class*="grid-cols-"], [class*="space-y-"], ul, ol, [role="list"], tbody) > * {
-  --stagger-duration: 0.22s;
-  --stagger-base: 6ms;
-  --stagger-step: 12ms;
-  --rise-y: 2px;
-  --rise-scale: 0.997;
-}
-
-.motion-lite .animate-page-enter,
-.motion-lite .animate-soft-rise,
-.motion-lite .animate-slideUp,
-.motion-lite .animate-slideDown,
-.motion-lite .animate-slideInLeft,
-.motion-lite .animate-slideInRight,
-.motion-lite .animate-scaleIn {
-  animation-duration: 0.2s !important;
-}
-
-.motion-lite .hover-lift:hover {
-  transform: translateY(-1px) !important;
-}
-
-.motion-lite .hover-glow:hover,
-.motion-lite .animate-float,
-.motion-lite .animate-spin-slow,
-.motion-lite .animate-pulse-slow {
-  animation: none !important;
-}
-
-.motion-lite .interactive-smooth,
-.motion-lite .transition-smooth {
-  transition-duration: 0.16s !important;
-}
-
 /* Theme transition for interactive elements only */
 :where(button, [role="button"], a, input, select, textarea, .card-enhanced, [data-slot]) {
   transition: 
@@ -357,24 +286,12 @@ a:hover {
   z-index: 2147483647 !important;
 }
 
-#gim-bot-tool-button-container {
-  pointer-events: none !important;
-  width: auto !important;
-  height: auto !important;
-}
-
-#gim-bot-tool-button {
-  pointer-events: auto !important;
-  touch-action: manipulation !important;
-}
-
 #gim-bot-tool-bot-container {
   position: absolute !important;
   right: 24px !important;
   bottom: 96px !important;
   top: auto !important;
   z-index: 10000 !important;
-  pointer-events: auto !important;
 }
 
 body[data-chatbot="header"] #gim-bot-tool-button,
@@ -421,6 +338,31 @@ body[data-chatbot="header"] #gim-bot-tool-bot-container {
   transform: translateY(0);
   pointer-events: auto;
 }
+#region Chatbot Responsive Fix
+/* Ẩn hoàn toàn các lớp chatbot trên mobile khi chưa mở */
+@media (max-width: 768px) {
+  #gim-bot-tool-button-container,
+  #gim-bot-tool-button,
+  #gim-bot-tool-bot-container,
+  #gim-chatbot-popup {
+    display: none !important;
+    pointer-events: none !important;
+  }
+  /* Khi mở popup thì chỉ hiện đúng vùng, không phủ toàn màn hình */
+  #gim-chatbot-popup.is-visible {
+    display: flex !important;
+    pointer-events: auto !important;
+    /* Đảm bảo overlay không phủ toàn màn hình */
+    max-width: 95vw;
+    max-height: 80vh;
+    right: 8px;
+    left: auto;
+    bottom: 16px;
+    top: auto;
+    z-index: 10001;
+  }
+}
+#endregion
 
 #gim-chatbot-popup-close {
   border: 0;
@@ -598,37 +540,6 @@ html[data-theme="dark"] {
   }
 }
 
-@keyframes page-enter {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes soft-rise {
-  from {
-    opacity: 0;
-    transform: translateY(var(--rise-y, 8px)) scale(var(--rise-scale, 0.98));
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes soft-glow {
-  0%, 100% {
-    box-shadow: 0 0 0 rgba(59, 130, 246, 0);
-  }
-  50% {
-    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.16);
-  }
-}
-
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
@@ -639,154 +550,6 @@ html[data-theme="dark"] {
 
 .animate-fade-in {
   animation: fade-in 0.4s ease-out forwards;
-}
-
-.animate-page-enter {
-  animation: page-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.animate-soft-rise {
-  animation: soft-rise 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-
-.hover-lift {
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.hover-lift:hover {
-  transform: translateY(-4px);
-}
-
-.hover-glow:hover {
-  animation: soft-glow 1.6s ease-in-out infinite;
-}
-
-.interactive-smooth {
-  transform: translateZ(0);
-  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.stagger-scope > * > * {
-  opacity: 0;
-  animation-name: soft-rise;
-  animation-duration: 0.5s;
-  animation-fill-mode: both;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.stagger-scope > * > *:nth-child(1) { animation-delay: 40ms; }
-.stagger-scope > * > *:nth-child(2) { animation-delay: 100ms; }
-.stagger-scope > * > *:nth-child(3) { animation-delay: 160ms; }
-.stagger-scope > * > *:nth-child(4) { animation-delay: 220ms; }
-.stagger-scope > * > *:nth-child(5) { animation-delay: 280ms; }
-.stagger-scope > * > *:nth-child(6) { animation-delay: 340ms; }
-.stagger-scope > * > *:nth-child(7) { animation-delay: 400ms; }
-.stagger-scope > * > *:nth-child(8) { animation-delay: 460ms; }
-
-.stagger-marketing > * > * {
-  animation-duration: 0.55s;
-}
-
-.stagger-auth > * > * {
-  animation-duration: 0.45s;
-}
-
-.stagger-learning > * > *,
-.stagger-admin > * > *,
-.stagger-teacher > * > * {
-  animation-duration: 0.48s;
-}
-
-.stagger-items :is(.grid, [class*="grid-cols-"], [class*="space-y-"], ul, ol, [role="list"], tbody) > * {
-  --stagger-duration: 0.42s;
-  --stagger-base: 35ms;
-  --stagger-step: 45ms;
-  --rise-y: 8px;
-  --rise-scale: 0.98;
-  opacity: 0;
-  animation-name: soft-rise;
-  animation-duration: var(--stagger-duration);
-  animation-fill-mode: both;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.stagger-items :is(.grid, [class*="grid-cols-"], [class*="space-y-"], ul, ol, [role="list"], tbody) > *:nth-child(1) { animation-delay: calc(var(--stagger-base) + var(--stagger-step) * 0); }
-.stagger-items :is(.grid, [class*="grid-cols-"], [class*="space-y-"], ul, ol, [role="list"], tbody) > *:nth-child(2) { animation-delay: calc(var(--stagger-base) + var(--stagger-step) * 1); }
-.stagger-items :is(.grid, [class*="grid-cols-"], [class*="space-y-"], ul, ol, [role="list"], tbody) > *:nth-child(3) { animation-delay: calc(var(--stagger-base) + var(--stagger-step) * 2); }
-.stagger-items :is(.grid, [class*="grid-cols-"], [class*="space-y-"], ul, ol, [role="list"], tbody) > *:nth-child(4) { animation-delay: calc(var(--stagger-base) + var(--stagger-step) * 3); }
-.stagger-items :is(.grid, [class*="grid-cols-"], [class*="space-y-"], ul, ol, [role="list"], tbody) > *:nth-child(5) { animation-delay: calc(var(--stagger-base) + var(--stagger-step) * 4); }
-.stagger-items :is(.grid, [class*="grid-cols-"], [class*="space-y-"], ul, ol, [role="list"], tbody) > *:nth-child(6) { animation-delay: calc(var(--stagger-base) + var(--stagger-step) * 5); }
-.stagger-items :is(.grid, [class*="grid-cols-"], [class*="space-y-"], ul, ol, [role="list"], tbody) > *:nth-child(7) { animation-delay: calc(var(--stagger-base) + var(--stagger-step) * 6); }
-.stagger-items :is(.grid, [class*="grid-cols-"], [class*="space-y-"], ul, ol, [role="list"], tbody) > *:nth-child(8) { animation-delay: calc(var(--stagger-base) + var(--stagger-step) * 7); }
-.stagger-items :is(.grid, [class*="grid-cols-"], [class*="space-y-"], ul, ol, [role="list"], tbody) > *:nth-child(9) { animation-delay: calc(var(--stagger-base) + var(--stagger-step) * 8); }
-.stagger-items :is(.grid, [class*="grid-cols-"], [class*="space-y-"], ul, ol, [role="list"], tbody) > *:nth-child(10) { animation-delay: calc(var(--stagger-base) + var(--stagger-step) * 9); }
-.stagger-items :is(.grid, [class*="grid-cols-"], [class*="space-y-"], ul, ol, [role="list"], tbody) > *:nth-child(11) { animation-delay: calc(var(--stagger-base) + var(--stagger-step) * 10); }
-.stagger-items :is(.grid, [class*="grid-cols-"], [class*="space-y-"], ul, ol, [role="list"], tbody) > *:nth-child(12) { animation-delay: calc(var(--stagger-base) + var(--stagger-step) * 11); }
-
-.stagger-items .stagger-kind-stats {
-  --stagger-duration: 0.32s;
-  --stagger-base: 16ms;
-  --stagger-step: 24ms;
-}
-
-.stagger-items .stagger-kind-card {
-  --stagger-duration: 0.44s;
-  --stagger-base: 28ms;
-  --stagger-step: 42ms;
-}
-
-.stagger-items tbody > tr {
-  --stagger-duration: 0.6s;
-  --stagger-base: 70ms;
-  --stagger-step: 78ms;
-}
-
-@media (max-width: 768px) {
-  .stagger-items :is(.grid, [class*="grid-cols-"], [class*="space-y-"], ul, ol, [role="list"], tbody) > * {
-    --stagger-duration: 0.34s;
-    --stagger-base: 18ms;
-    --stagger-step: 30ms;
-    --rise-y: 6px;
-    --rise-scale: 0.99;
-  }
-
-  .stagger-items tbody > tr {
-    --stagger-duration: 0.46s;
-    --stagger-base: 30ms;
-    --stagger-step: 44ms;
-  }
-}
-
-.dark .stagger-items :is(.grid, [class*="grid-cols-"], [class*="space-y-"], ul, ol, [role="list"], tbody) > * {
-  --rise-y: 5px;
-  --rise-scale: 0.992;
-}
-
-.dark .hover-lift:hover {
-  transform: translateY(-3px);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-page-enter,
-  .animate-soft-rise,
-  .hover-glow:hover {
-    animation: none !important;
-  }
-
-  .hover-lift:hover,
-  .interactive-smooth {
-    transform: none !important;
-  }
-
-  .stagger-scope > * > * {
-    animation: none !important;
-    opacity: 1 !important;
-  }
-
-  .stagger-items :is(.grid, [class*="grid-cols-"], [class*="space-y-"], ul, ol, [role="list"], tbody) > * {
-    animation: none !important;
-    opacity: 1 !important;
-  }
 }
 
 .animate-slideUp {

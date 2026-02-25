@@ -2,13 +2,6 @@
 
 import React from "react"
 
-// Extend the Window interface to include __modalOpenCount
-declare global {
-  interface Window {
-    __modalOpenCount?: number
-  }
-}
-
 import { X, AlertCircle } from "lucide-react"
 import { useState } from "react"
 
@@ -21,42 +14,46 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, title, children, size = "md" }: ModalProps) {
-  // Modal open counter to handle multiple modals, only set overflow
+  // Lock body scroll when modal open, restore when close
   React.useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (!window.__modalOpenCount) window.__modalOpenCount = 0;
     if (isOpen) {
-      window.__modalOpenCount++;
       document.body.style.overflow = 'hidden';
+      document.body.style.pointerEvents = 'auto';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.pointerEvents = '';
     }
     return () => {
-      if (isOpen) {
-        if (typeof window.__modalOpenCount === "number") {
-          window.__modalOpenCount--;
-          if (window.__modalOpenCount <= 0) {
-            document.body.style.overflow = '';
-            window.__modalOpenCount = 0;
-          }
-        }
-      }
+      document.body.style.overflow = '';
+      document.body.style.pointerEvents = '';
     };
   }, [isOpen]);
-  if (!isOpen) return null
+
+  if (!isOpen) return null;
 
   const sizeClasses = {
     sm: "max-w-md",
     md: "max-w-2xl",
     lg: "max-w-4xl",
-  }
+  };
 
+  // Render modal and overlay only when isOpen is true, so they are unmounted completely when closed
   return (
-    <div
-      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Overlay */}
       <div
-        className={`bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl ${sizeClasses[size]} w-full`}
-        onClick={e => e.stopPropagation()}
+        className="modal-overlay fixed inset-0 bg-black/50"
+        style={{ pointerEvents: 'auto' }}
+        onClick={onClose}
+        aria-label="Đóng modal"
+        tabIndex={-1}
+      />
+      {/* Modal content */}
+      <div
+        className={`modal-content bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl ${sizeClasses[size]} w-full relative`}
+        style={{ pointerEvents: 'auto', zIndex: 10001 }}
+        role="dialog"
+        aria-modal="true"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border dark:border-slate-800">
@@ -64,6 +61,7 @@ export function Modal({ isOpen, onClose, title, children, size = "md" }: ModalPr
           <button
             onClick={onClose}
             className="p-2 hover:bg-secondary dark:hover:bg-slate-800 rounded-lg transition-smooth"
+            aria-label="Đóng modal"
           >
             <X size={20} className="text-muted-foreground dark:text-slate-400" />
           </button>
@@ -71,13 +69,13 @@ export function Modal({ isOpen, onClose, title, children, size = "md" }: ModalPr
 
         {/* Content */}
         <div
-          className="p-6 max-h-[80dvh] overflow-y-auto modal-content-scroll"
+          className="p-6 max-h-[calc(100vh-200px)] overflow-y-auto modal-content-scroll"
         >
           {children}
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 interface AddUserModalProps {

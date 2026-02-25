@@ -73,15 +73,6 @@ window.__gim.licenseId = "604927107960698062";
     container.style.transform = "none";
     container.style.willChange = "transform";
     container.style.zIndex = "2147483647";
-    container.style.pointerEvents = "none";
-    container.style.width = "auto";
-    container.style.height = "auto";
-
-    var chatButton = document.getElementById("gim-bot-tool-button");
-    if (chatButton) {
-      chatButton.style.pointerEvents = "auto";
-      chatButton.style.touchAction = "manipulation";
-    }
     
     // Handle bot container (chat panel)
     var botContainer = document.getElementById("gim-bot-tool-bot-container");
@@ -94,7 +85,6 @@ window.__gim.licenseId = "604927107960698062";
       botContainer.style.bottom = "96px";
       botContainer.style.top = "auto";
       botContainer.style.zIndex = "10000";
-      botContainer.style.pointerEvents = "auto";
     }
   };
 
@@ -163,55 +153,6 @@ window.__gim.licenseId = "604927107960698062";
 
   var observer = new MutationObserver(function(){ bindChatButton(); });
   observer.observe(document.documentElement, { childList: true, subtree: true });
-})();`}
-        </Script>
-        <Script id="motion-profile" strategy="afterInteractive">
-          {`(function(){
-  try {
-    var nav = navigator || {};
-    var conn = nav.connection || nav.mozConnection || nav.webkitConnection || {};
-    var params = new URLSearchParams(window.location.search || "");
-    var forced = (params.get('motion') || '').toLowerCase();
-    var memory = nav.deviceMemory || 8;
-    var cores = nav.hardwareConcurrency || 8;
-    var saveData = !!conn.saveData;
-    var slowNet = /(^2g$)|(^slow-2g$)/i.test(conn.effectiveType || "");
-    var lowSpec = memory <= 4 || cores <= 4;
-    var prefersReduced = false;
-
-    try {
-      prefersReduced = !!window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    } catch (e) {}
-
-    var root = document.documentElement;
-    var body = document.body;
-
-    var forceLite = forced === 'lite';
-    var forceFull = forced === 'full';
-    var shouldLite = forceLite || (!forceFull && (saveData || slowNet || lowSpec || prefersReduced));
-
-    root.classList.remove('motion-lite');
-    body.classList.remove('motion-lite');
-
-    if (shouldLite) {
-      root.classList.add('motion-lite');
-      body.classList.add('motion-lite');
-      root.setAttribute('data-motion-profile', forceLite ? 'lite-forced' : 'lite-auto');
-    } else {
-      root.setAttribute('data-motion-profile', forceFull ? 'full-forced' : 'full-auto');
-    }
-
-    if (forced && forced !== 'lite' && forced !== 'full') {
-      root.setAttribute('data-motion-debug', 'invalid-param');
-    }
-
-    if (forced === 'lite' || forced === 'full') {
-      root.setAttribute('data-motion-debug', 'query-override');
-    } else {
-      root.removeAttribute('data-motion-debug');
-    }
-
-  } catch (e) {}
 })();`}
         </Script>
       </body>
