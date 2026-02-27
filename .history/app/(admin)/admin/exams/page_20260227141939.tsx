@@ -453,11 +453,11 @@ export default function AdminExamsPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={(e) => {
+                          onClick={() => {
                             const card = e.currentTarget.closest('[data-exam-card]') as HTMLElement
-                          if (card) {
-                            setAnchorRect(card.getBoundingClientRect())
-                          }
+    if (card) {
+      setAnchorRect(card.getBoundingClientRect())
+    }
                             setSelectedExam(exam)
                             setViewMode("view")
                           }}

@@ -455,9 +455,9 @@ export default function AdminExamsPage() {
                         <button
                           onClick={(e) => {
                             const card = e.currentTarget.closest('[data-exam-card]') as HTMLElement
-                          if (card) {
-                            setAnchorRect(card.getBoundingClientRect())
-                          }
+    if (card) {
+      setAnchorRect(card.getBoundingClientRect())
+    }
                             setSelectedExam(exam)
                             setViewMode("view")
                           }}

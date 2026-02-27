@@ -149,252 +149,89 @@ export default function AdminExamsPage() {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         openMenu &&
-        menuRef.current &&
-        !menuRef.current.contains(event.target as Node)
-      ) {
-        setOpenMenu(null)
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [openMenu])
-
-  useEffect(() => {
-    const closeMenu = () => setOpenMenu(null)
-    window.addEventListener("scroll", closeMenu)
-    window.addEventListener("resize", closeMenu)
-    return () => {
-      window.removeEventListener("scroll", closeMenu)
-      window.removeEventListener("resize", closeMenu)
-    }
-  }, [])
-
-  const filteredExams = exams.filter(
-    (exam) =>
-      (exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        exam.teacher.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        exam.course.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (statusFilter === "all" || exam.status === statusFilter) &&
-      (typeFilter === "all" || exam.type === typeFilter)
-  )
-
-  // Stats
-  const totalExams = exams.length
-  const pendingExams = exams.filter(e => e.status === "pending").length
-  const approvedExams = exams.filter(e => e.status === "approved").length
-  const rejectedExams = exams.filter(e => e.status === "rejected").length
-  const practiceExams = exams.filter(e => e.type === "practice").length
-  const officialExams = exams.filter(e => e.type === "official").length
-
-  const handleApprove = (examId: string) => {
-    setExams(exams.map(exam =>
-      exam.id === examId ? { ...exam, status: "approved" as const, rejectionReason: undefined } : exam
-    ))
-    setOpenMenu(null)
-  }
-
-  const handleReject = () => {
-    if (!selectedExam || !rejectionReason.trim()) return
-    setExams(exams.map(exam =>
-      exam.id === selectedExam.id
-        ? { ...exam, status: "rejected" as const, rejectionReason }
-        : exam
-    ))
-    setViewMode(null)
-    setSelectedExam(null)
-    setRejectionReason("")
-  }
-
-  const handleDelete = (examId: string) => {
-    setExams(exams.filter(exam => exam.id !== examId))
-    setConfirmDialog({ isOpen: false, action: "" })
-  }
-
-  const getStatusBadge = (status: string) => {
-    const styles = {
-      pending: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-      approved: "bg-green-500/10 text-green-500 border-green-500/20",
-      rejected: "bg-red-500/10 text-red-500 border-red-500/20",
-      draft: "bg-gray-500/10 text-gray-500 border-gray-500/20",
-    }
-    const labels = {
-      pending: "Chờ duyệt",
-      approved: "Đã duyệt",
-      rejected: "Từ chối",
-      draft: "Nháp",
-    }
-    const icons = {
-      pending: Clock,
-      approved: CheckCircle,
-      rejected: XCircle,
-      draft: FileText,
-    }
-    const Icon = icons[status as keyof typeof icons]
-    return (
-      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${styles[status as keyof typeof styles]}`}>
-        <Icon size={12} />
-        {labels[status as keyof typeof labels]}
-      </span>
-    )
-  }
-
-  const getTypeBadge = (type: string) => {
-    const styles = {
-      practice: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-      official: "bg-purple-500/10 text-purple-500 border-purple-500/20",
-    }
-    const labels = {
-      practice: "Thi thử",
-      official: "Thi thật",
-    }
-    return (
-      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${styles[type as keyof typeof styles]}`}>
-        {type === "official" ? <Award size={12} /> : <ClipboardList size={12} />}
-        {labels[type as keyof typeof labels]}
-      </span>
-    )
-  }
-  return (
-    <div className="min-h-screen w-full">
-      <div className="w-full space-y-8">
-        {/* Header with Stats */}
-        <div className="relative overflow-hidden p-8 rounded-3xl animate-fadeIn" style={{ backgroundImage: "url('/image/exam2.png')", backgroundSize: "cover", backgroundPosition: "center" }}>
-          {/* Overlay for better readability */}
-          <div className="absolute inset-0 bg-black/15 dark:bg-black/45 rounded-3xl"></div>
-          
-          <div className="relative z-10 space-y-8">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 animate-slideDown" style={{ animationDelay: "0.15s" }}>
-              <div>
-                <h1 className="text-3xl font-bold text-white mb-2 drop-shadow-lg">Quản lý Bài thi</h1>
-                <p className="text-black/70 dark:text-white/80 drop-shadow">Duyệt và quản lý các bài thi từ giáo viên</p>
-              </div>
-            </div>
-
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-              <div className="animate-slideUp" style={{ animationDelay: "0.25s" }}>
-                <div className="group flex items-center justify-between p-5 h-full bg-white/80 dark:bg-slate-800/70 backdrop-blur-md rounded-2xl hover:bg-white/95 dark:hover:bg-slate-800/90 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer">
-                  <div>
-                    <p className="text-muted-foreground dark:text-slate-300 text-sm font-medium">Tổng bài thi</p>
-                    <p className="text-2xl font-bold text-foreground dark:text-white mt-1">{totalExams}</p>
-                  </div>
-                  <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition-all duration-300">
-                    <FileText size={20} className="text-primary" />
-                  </div>
-                </div>
-              </div>
-              <div className="animate-slideUp" style={{ animationDelay: "0.35s" }}>
-                <div className="group flex items-center justify-between p-5 h-full bg-white/80 dark:bg-slate-800/70 backdrop-blur-md rounded-2xl hover:bg-white/95 dark:hover:bg-slate-800/90 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer">
-                  <div>
-                    <p className="text-muted-foreground dark:text-slate-300 text-sm font-medium">Chờ duyệt</p>
-                    <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mt-1">{pendingExams}</p>
-                  </div>
-                  <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-all duration-300">
-                    <Clock size={20} className="text-yellow-600 dark:text-yellow-400" />
-                  </div>
-                </div>
-              </div>
-              <div className="animate-slideUp" style={{ animationDelay: "0.45s" }}>
-                <div className="group flex items-center justify-between p-5 h-full bg-white/80 dark:bg-slate-800/70 backdrop-blur-md rounded-2xl hover:bg-white/95 dark:hover:bg-slate-800/90 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer">
-                  <div>
-                    <p className="text-muted-foreground dark:text-slate-300 text-sm font-medium">Đã duyệt</p>
-                    <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{approvedExams}</p>
-                  </div>
-                  <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-all duration-300">
-                    <CheckCircle size={20} className="text-green-600 dark:text-green-400" />
-                  </div>
-                </div>
-              </div>
-              <div className="animate-slideUp" style={{ animationDelay: "0.55s" }}>
-                <div className="group flex items-center justify-between p-5 h-full bg-white/80 dark:bg-slate-800/70 backdrop-blur-md rounded-2xl hover:bg-white/95 dark:hover:bg-slate-800/90 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer">
-                  <div>
-                    <p className="text-muted-foreground dark:text-slate-300 text-sm font-medium">Từ chối</p>
-                    <p className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{rejectedExams}</p>
-                  </div>
-                  <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-all duration-300">
-                    <XCircle size={20} className="text-red-600 dark:text-red-400" />
-                  </div>
-                </div>
-              </div>
-              <div className="animate-slideUp" style={{ animationDelay: "0.65s" }}>
-                <div className="group flex items-center justify-between p-5 h-full bg-white/80 dark:bg-slate-800/70 backdrop-blur-md rounded-2xl hover:bg-white/95 dark:hover:bg-slate-800/90 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer">
-                  <div>
-                    <p className="text-muted-foreground dark:text-slate-300 text-sm font-medium">Thi thử</p>
-                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{practiceExams}</p>
-                  </div>
-                  <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-all duration-300">
-                    <ClipboardList size={20} className="text-blue-600 dark:text-blue-400" />
-                  </div>
-                </div>
-              </div>
-              <div className="animate-slideUp" style={{ animationDelay: "0.75s" }}>
-                <div className="group flex items-center justify-between p-5 h-full bg-white/80 dark:bg-slate-800/70 backdrop-blur-md rounded-2xl hover:bg-white/95 dark:hover:bg-slate-800/90 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer">
-                  <div>
-                    <p className="text-muted-foreground dark:text-slate-300 text-sm font-medium">Thi thật</p>
-                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{officialExams}</p>
-                  </div>
-                  <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-all duration-300">
-                    <Award size={20} className="text-purple-600 dark:text-purple-400" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* Filters */}
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
-            <input
-              type="text"
-              placeholder="Tìm kiếm bài thi, giáo viên, khóa học..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-secondary dark:bg-slate-800 border border-border dark:border-slate-700 rounded-xl text-foreground dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            />
-          </div>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-3 bg-secondary dark:bg-slate-800 border border-border dark:border-slate-700 rounded-xl text-foreground dark:text-white"
-          >
-            <option value="all">Tất cả trạng thái</option>
-            <option value="pending">Chờ duyệt</option>
-            <option value="approved">Đã duyệt</option>
-            <option value="rejected">Từ chối</option>
-            <option value="draft">Nháp</option>
-          </select>
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-4 py-3 bg-secondary dark:bg-slate-800 border border-border dark:border-slate-700 rounded-xl text-foreground dark:text-white"
-          >
-            <option value="all">Tất cả loại</option>
-            <option value="practice">Thi thử</option>
-            <option value="official">Thi thật</option>
-          </select>
-        </div>
-
-        {/* Exams Table (Desktop/Tablet) */}
-        <div className="hidden lg:block bg-white/80 dark:bg-slate-900/70 backdrop-blur-md border border-border dark:border-slate-800 rounded-2xl overflow-hidden animate-slideUp" style={{ animationDelay: "0.2s" }}>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-white/50 dark:bg-slate-800/50">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-foreground dark:text-white">Bài thi</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-foreground dark:text-white">Loại</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-foreground dark:text-white">Giáo viên</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-foreground dark:text-white">Cài đặt</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-foreground dark:text-white">Trạng thái</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-foreground dark:text-white">Lượt thi</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold text-foreground dark:text-white">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border dark:divide-slate-800">
-                {filteredExams.map((exam) => (
+                {selectedExam && viewMode && (
+                  anchorRect ? (
+                    <div
+                      className="absolute z-50 bg-black/60 backdrop-blur-sm"
+                      style={{
+                        top: anchorRect.bottom + 8,
+                        left: anchorRect.left + anchorRect.width / 2 - 320,
+                        width: 640,
+                        maxWidth: '95vw',
+                      }}
+                    >
+                      <div className="w-full max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] overflow-y-auto rounded-none sm:rounded-2xl bg-card dark:bg-slate-900 border border-border dark:border-slate-800 shadow-2xl">
+                        {/* ...existing modal content... */}
+                        <div className="sticky top-0 z-10 px-4 py-3 sm:p-6 flex items-center justify-between border-b border-border dark:border-slate-800">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                              <FileText className="text-white" size={20} />
+                            </div>
+                            <span className="text-xl font-bold text-foreground dark:text-white">{viewMode === "reject" ? "Từ chối bài thi" : "Xem trước bài thi"}</span>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setViewMode(null)
+                              setSelectedExam(null)
+                              setRejectionReason("")
+                            }}
+                            className="p-2 rounded-full hover:bg-secondary dark:hover:bg-slate-800 transition-colors"
+                          >
+                            <X size={20} />
+                          </button>
+                        </div>
+                        <div className="p-4 sm:p-6 space-y-6">
+                          {viewMode === "view" && (
+                            <>
+                              {/* ...existing modal content... */}
+                            </>
+                          )}
+                          {viewMode === "reject" && (
+                            <>
+                              {/* ...existing modal content... */}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                      <div className="w-full max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] overflow-y-auto rounded-none sm:rounded-2xl bg-card dark:bg-slate-900 border border-border dark:border-slate-800 shadow-2xl">
+                        {/* ...existing modal content... */}
+                        <div className="sticky top-0 z-10 px-4 py-3 sm:p-6 flex items-center justify-between border-b border-border dark:border-slate-800">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                              <FileText className="text-white" size={20} />
+                            </div>
+                            <span className="text-xl font-bold text-foreground dark:text-white">{viewMode === "reject" ? "Từ chối bài thi" : "Xem trước bài thi"}</span>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setViewMode(null)
+                              setSelectedExam(null)
+                              setRejectionReason("")
+                            }}
+                            className="p-2 rounded-full hover:bg-secondary dark:hover:bg-slate-800 transition-colors"
+                          >
+                            <X size={20} />
+                          </button>
+                        </div>
+                        <div className="p-4 sm:p-6 space-y-6">
+                          {viewMode === "view" && (
+                            <>
+                              {/* ...existing modal content... */}
+                            </>
+                          )}
+                          {viewMode === "reject" && (
+                            <>
+                              {/* ...existing modal content... */}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                )}
                   <tr key={exam.id} className="hover:bg-white/60 dark:hover:bg-slate-800/60 transition-all duration-300">
                     <td className="px-6 py-4">
                       <div>
@@ -453,11 +290,7 @@ export default function AdminExamsPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={(e) => {
-                            const card = e.currentTarget.closest('[data-exam-card]') as HTMLElement
-                          if (card) {
-                            setAnchorRect(card.getBoundingClientRect())
-                          }
+                          onClick={() => {
                             setSelectedExam(exam)
                             setViewMode("view")
                           }}
@@ -678,8 +511,30 @@ export default function AdminExamsPage() {
 
         {/* View/Reject Modal */}
         {selectedExam && viewMode && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="w-full max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] overflow-y-auto rounded-none sm:rounded-2xl bg-card dark:bg-slate-900 border border-border dark:border-slate-800 shadow-2xl">
+          {/* Modal neo theo vị trí card */}
+          {anchorRect ? (
+            <div
+              className="absolute z-50 bg-black/60 backdrop-blur-sm"
+              style={{
+                top: anchorRect.bottom + 8,
+                left: anchorRect.left + anchorRect.width / 2 - 320,
+                width: 640,
+                maxWidth: '95vw',
+              }}
+            >
+              <div className="w-full max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] overflow-y-auto rounded-none sm:rounded-2xl bg-card dark:bg-slate-900 border border-border dark:border-slate-800 shadow-2xl">
+                {/* ...existing modal content... */}
+                {/* ...existing code... */}
+              </div>
+            </div>
+          ) : (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+              <div className="w-full max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] overflow-y-auto rounded-none sm:rounded-2xl bg-card dark:bg-slate-900 border border-border dark:border-slate-800 shadow-2xl">
+                {/* ...existing modal content... */}
+                {/* ...existing code... */}
+              </div>
+            </div>
+          )}
               <div className="sticky top-0 z-10 px-4 py-3 sm:p-6 flex items-center justify-between border-b border-border dark:border-slate-800">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">

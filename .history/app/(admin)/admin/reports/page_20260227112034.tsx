@@ -179,25 +179,12 @@ export default function AdminReportsPage() {
   useEffect(() => {
     if (!isExportOpen || !exportAnchor) return
     const updatePosition = () => {
-  const rect = exportAnchor.getBoundingClientRect()
-  const menuWidth = 420
-  const margin = 8
-
-  let left = rect.left + rect.width / 2 - menuWidth / 2
-
-  // Chặn tràn trái
-  if (left < margin) left = margin
-
-  // Chặn tràn phải
-  if (left + menuWidth > window.innerWidth - margin) {
-    left = window.innerWidth - menuWidth - margin
-  }
-
-  setExportMenuPos({
-    top: rect.bottom + 8 + window.scrollY,
-    left: left + window.scrollX,
-  })
-}
+      const rect = exportAnchor.getBoundingClientRect()
+      // Modal nằm dưới nút xuất, căn giữa theo nút
+      const menuWidth = 420
+      const left = rect.left + rect.width / 2 - menuWidth / 2
+      setExportMenuPos({ top: rect.bottom + 8, left })
+    }
 
     updatePosition()
     window.addEventListener("resize", updatePosition)
@@ -249,12 +236,7 @@ export default function AdminReportsPage() {
     } else if (selectedReport === "teachers" || selectedReport === "students") {
       headers = ["Thời gian", selectedReport === "teachers" ? "Giáo viên" : "Học viên"]
       const src = selectedReport === "teachers" ? teacherGrowth : studentGrowth
-      data = src.map((r) => [
-        r.month,
-        selectedReport === "teachers"
-          ? (typeof (r as { teachers: number }).teachers === "number" ? (r as { teachers: number }).teachers : 0)
-          : (typeof (r as { students: number }).students === "number" ? (r as { students: number }).students : 0)
-      ])
+      data = src.map((r) => [r.month, selectedReport === "teachers" ? r.teachers : r.students])
     }
 
     const reportName =

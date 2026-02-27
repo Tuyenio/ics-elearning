@@ -453,11 +453,7 @@ export default function AdminExamsPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={(e) => {
-                            const card = e.currentTarget.closest('[data-exam-card]') as HTMLElement
-                          if (card) {
-                            setAnchorRect(card.getBoundingClientRect())
-                          }
+                          onClick={() => {
                             setSelectedExam(exam)
                             setViewMode("view")
                           }}
@@ -678,8 +674,30 @@ export default function AdminExamsPage() {
 
         {/* View/Reject Modal */}
         {selectedExam && viewMode && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="w-full max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] overflow-y-auto rounded-none sm:rounded-2xl bg-card dark:bg-slate-900 border border-border dark:border-slate-800 shadow-2xl">
+          {/* Modal neo theo vị trí card */}
+          {anchorRect ? (
+            <div
+              className="absolute z-50 bg-black/60 backdrop-blur-sm"
+              style={{
+                top: anchorRect.bottom + 8,
+                left: anchorRect.left + anchorRect.width / 2 - 320,
+                width: 640,
+                maxWidth: '95vw',
+              }}
+            >
+              <div className="w-full max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] overflow-y-auto rounded-none sm:rounded-2xl bg-card dark:bg-slate-900 border border-border dark:border-slate-800 shadow-2xl">
+                {/* ...existing modal content... */}
+                {/* ...existing code... */}
+              </div>
+            </div>
+          ) : (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+              <div className="w-full max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] overflow-y-auto rounded-none sm:rounded-2xl bg-card dark:bg-slate-900 border border-border dark:border-slate-800 shadow-2xl">
+                {/* ...existing modal content... */}
+                {/* ...existing code... */}
+              </div>
+            </div>
+          )}
               <div className="sticky top-0 z-10 px-4 py-3 sm:p-6 flex items-center justify-between border-b border-border dark:border-slate-800">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">

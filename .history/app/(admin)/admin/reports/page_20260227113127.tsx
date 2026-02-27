@@ -252,8 +252,8 @@ export default function AdminReportsPage() {
       data = src.map((r) => [
         r.month,
         selectedReport === "teachers"
-          ? (typeof (r as { teachers: number }).teachers === "number" ? (r as { teachers: number }).teachers : 0)
-          : (typeof (r as { students: number }).students === "number" ? (r as { students: number }).students : 0)
+          ? (typeof r.teachers === "number" ? r.teachers : 0)
+          : (typeof r.students === "number" ? r.students : 0)
       ])
     }
 

@@ -249,12 +249,7 @@ export default function AdminReportsPage() {
     } else if (selectedReport === "teachers" || selectedReport === "students") {
       headers = ["Thời gian", selectedReport === "teachers" ? "Giáo viên" : "Học viên"]
       const src = selectedReport === "teachers" ? teacherGrowth : studentGrowth
-      data = src.map((r) => [
-        r.month,
-        selectedReport === "teachers"
-          ? (typeof (r as { teachers: number }).teachers === "number" ? (r as { teachers: number }).teachers : 0)
-          : (typeof (r as { students: number }).students === "number" ? (r as { students: number }).students : 0)
-      ])
+      data = src.map((r) => [r.month, selectedReport === "teachers" ? r.teachers : r.students])
     }
 
     const reportName =
