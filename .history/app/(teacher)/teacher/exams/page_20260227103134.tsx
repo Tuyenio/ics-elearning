@@ -23,7 +23,6 @@ import {
   BookOpen,
   Users
 } from "lucide-react"
-import React from "react"
 
 interface Exam {
   id: string
@@ -609,9 +608,9 @@ export default function TeacherExamsPage() {
         <div className="p-6 border-b border-border flex items-center justify-between">
           <h2 className="text-xl font-bold">Chi tiết bài thi</h2>
           <button
-          ref={el => { detailBtnRefs.current[selectedExam.id] = el }}
+          ref={el => { detailBtnRefs[selectedExam.id] = el }}
             onClick={() => {
-              const btn = detailBtnRefs.current[ selectedExam.id];
+              const btn = detailBtnRefs[exam.id];
     if (btn) {
       const rect = btn.getBoundingClientRect();
       setModalPos({
@@ -619,7 +618,7 @@ export default function TeacherExamsPage() {
         left: rect.left,
       });
     }
-    setSelectedExam(selectedExam);
+    setSelectedExam(exam);
     setViewMode("view");
   }}
             className="p-2 hover:bg-secondary rounded-lg"

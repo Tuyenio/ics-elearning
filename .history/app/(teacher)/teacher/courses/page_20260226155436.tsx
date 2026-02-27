@@ -6,7 +6,6 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { formatPrice } from "@/lib/format"
 import { createPortal } from "react-dom"
-import React from "react"
 interface Course {
   id: string
   title: string
@@ -40,13 +39,7 @@ interface BackendCourse {
   } | null
   lessons?: Array<{ id: string }>
 }
-const InfoItem = ({ icon, label, value }: any) => (
-  <div className="bg-secondary rounded-xl p-3 text-center">
-    <div className="flex justify-center mb-1">{icon}</div>
-    <div className="text-lg font-bold">{value}</div>
-    <div className="text-xs text-muted-foreground">{label}</div>
-  </div>
-)
+
 export default function TeacherCoursesPage() {
   const router = useRouter()
   const [courses, setCourses] = useState<Course[]>([])
@@ -57,9 +50,7 @@ export default function TeacherCoursesPage() {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
   const [viewMode, setViewMode] = useState<"view" | "delete" | null>(null)
   const [menuCourse, setMenuCourse] = useState<Course | null>(null)
-  const [menuRect, setMenuRect] = useState<DOMRect | null>(null)
-  const [menuAnchorId, setMenuAnchorId] = useState<string | null>(null)
-  const menuButtonRefs = React.useRef<Map<string, React.RefObject<HTMLButtonElement>>>(new Map());
+  const [menuCoords, setMenuCoords] = useState<DOMRect | null>(null)
 
   const normalizeList = (data: any): BackendCourse[] => {
     if (Array.isArray(data)) return data
@@ -75,6 +66,7 @@ export default function TeacherCoursesPage() {
       pending: "pending",
       rejected: "rejected",
     }
+
     const durationHours = course.duration ? Math.round(course.duration / 60) : 0
     return {
       id: course.id,
@@ -159,9 +151,9 @@ export default function TeacherCoursesPage() {
     setMenuOpenId(null)
   }
 
-// Close dropdown when clicking outside
-// Only close dropdown on desktop, not mobile
-useEffect(() => {
+  // Close dropdown when clicking outside
+  // Only close dropdown on desktop, not mobile
+  useEffect(() => {
   const handleClickOutside = (event: MouseEvent) => {
     if (window.innerWidth < 768) return // ⬅️ CHỐT CHẶN MOBILE
 
@@ -174,16 +166,6 @@ useEffect(() => {
   document.addEventListener("click", handleClickOutside)
   return () => document.removeEventListener("click", handleClickOutside)
 }, [])
-
-// Recalculate menuRect only once when menu is open (mobile)
-useEffect(() => {
-  if (!menuCourse || !menuAnchorId || window.innerWidth >= 768) return
-
-  const ref = menuButtonRefs.current.get(menuAnchorId)
-  if (!ref?.current) return
-
-  setMenuRect(ref.current.getBoundingClientRect())
-}, [menuCourse, menuAnchorId])
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -357,11 +339,7 @@ useEffect(() => {
           ) : (
             <div className="grid grid-cols-1 gap-6">
               {filteredCourses.map((course) => (
-                <div
-                  key={course.id}
-                  data-course-card-id={course.id}
-                  className={`relative border border-border dark:border-slate-800 rounded-xl p-4 bg-white dark:bg-slate-900 shadow-sm flex flex-col gap-2 animate-fadeIn ${menuCourse?.id === course.id ? "z-[9999]" : "z-0"}`}
-                >
+                <div key={course.id} className="relative border border-border dark:border-slate-800 rounded-xl p-4 bg-white dark:bg-slate-900 shadow-sm flex flex-col gap-2 animate-fadeIn">
                   <div className="flex items-center gap-3 mb-2">
                     <img
                       src={course.thumbnail}
@@ -373,19 +351,12 @@ useEffect(() => {
                       <div className="text-xs text-muted-foreground dark:text-slate-400">{course.lessons} bài học • {course.duration}</div>
                     </div>
                     <button
-                      ref={(() => {
-                        if (!menuButtonRefs.current.has(course.id)) {
-                          menuButtonRefs.current.set(course.id, React.createRef<HTMLButtonElement>())
-                        }
-                        return menuButtonRefs.current.get(course.id);
-                      })()}
                       onClick={(e) => {
                         e.stopPropagation()
                         if (window.innerWidth < 768) {
                           const rect = e.currentTarget.getBoundingClientRect()
-                          setMenuRect(rect)
+                          setMenuCoords(rect)
                           setMenuCourse(course)
-                          setMenuAnchorId(course.id)
                         } else {
                           setMenuOpenId(menuOpenId === course.id ? null : course.id)
                         }
@@ -415,83 +386,90 @@ useEffect(() => {
                     <span className="text-xs text-muted-foreground dark:text-slate-400">Trạng thái:</span>
                     {getStatusBadge(course.status)}
                   </div>
-                  {/* INLINE DETAIL – NEO THEO CARD */}
-{viewMode === "view" && selectedCourse?.id === course.id && (
-  <div className="mt-4 rounded-xl border border-border bg-secondary p-4 animate-slideDown">
-
-    {/* Header */}
-    <div className="flex items-start gap-3 mb-3">
-      <img
-        src={course.thumbnail}
-        className="w-20 h-14 rounded-lg object-cover"
-      />
-
-      <div className="flex-1">
-        <h3 className="font-semibold text-sm">
-          {course.title}
-        </h3>
-        <p className="text-xs text-muted-foreground">
-          {course.description}
-        </p>
-        <div className="mt-1">
-          {getStatusBadge(course.status)}
-        </div>
-      </div>
-
-      <button
-        onClick={() => {
-          setViewMode(null)
-          setSelectedCourse(null)
-        }}
-        className="text-muted-foreground"
-      >
-        <XCircle size={18} />
-      </button>
-    </div>
-
-    {/* Stats */}
-    <div className="grid grid-cols-2 gap-2 mb-3">
-      <InfoItem icon={<Users size={14} />} label="Học viên" value={course.students} />
-      <InfoItem icon={<BookOpen size={14} />} label="Bài học" value={course.lessons} />
-      <InfoItem icon={<Clock size={14} />} label="Thời lượng" value={course.duration} />
-      <InfoItem
-        icon={<DollarSign size={14} />}
-        label="Giá"
-        value={`₫${formatPrice(course.price)}`}
-      />
-    </div>
-
-    {/* Actions */}
-    <div className="flex gap-2">
-      <button
-        onClick={() => handleEdit(course.id)}
-        className="flex-1 py-2 rounded-lg bg-background border text-sm"
-      >
-        Chỉnh sửa
-      </button>
-
-      {(course.status === "draft" || course.status === "rejected") && (
-        <button
-          onClick={() => handleSubmitForReview(course.id)}
-          className="flex-1 py-2 rounded-lg bg-primary text-white text-sm"
-        >
-          {course.status === "rejected"
-            ? "Gửi duyệt lại"
-            : "Gửi duyệt"}
-        </button>
-      )}
-    </div>
-  </div>
-)}
+                  
+                  {/* Modals - Mobile: anchor to card */}
+                  {viewMode === "view" && selectedCourse && selectedCourse.id === course.id && (
+                    <div className="absolute left-0 right-0 top-20 mx-auto z-[9999]">
+                      {/* Modal content: reuse existing modal code, but as a card-anchored popup */}
+                      <div className="bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full mx-auto p-6 animate-fadeIn">
+                        <div className="flex items-center justify-between mb-4">
+                          <h2 className="text-xl font-bold text-foreground dark:text-white">Chi tiết khóa học</h2>
+                          <button
+                            onClick={() => { setViewMode(null); setSelectedCourse(null); }}
+                            className="p-2 hover:bg-secondary dark:hover:bg-slate-800 rounded-lg transition-smooth"
+                          >
+                            <XCircle size={20} className="text-muted-foreground" />
+                          </button>
+                        </div>
+                        <div className="flex gap-4 mb-4">
+                          <img
+                            src={selectedCourse.thumbnail}
+                            alt={selectedCourse.title}
+                            className="w-24 h-16 rounded-lg object-cover bg-secondary"
+                          />
+                          <div className="flex-1">
+                            <h3 className="text-lg font-bold text-foreground dark:text-white">{selectedCourse.title}</h3>
+                            <p className="text-muted-foreground dark:text-slate-400 text-sm mt-1">{selectedCourse.description}</p>
+                            <div className="mt-2">{getStatusBadge(selectedCourse.status)}</div>
+                          </div>
+                        </div>
+                        {selectedCourse.status === "rejected" && selectedCourse.rejectionReason && (
+                          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mb-4">
+                            <div className="flex items-center gap-2 text-red-700 dark:text-red-400 mb-2">
+                              <AlertCircle size={18} />
+                              <span className="font-semibold">Lý do từ chối từ Admin</span>
+                            </div>
+                            <p className="text-red-600 dark:text-red-300 text-sm">{selectedCourse.rejectionReason}</p>
+                          </div>
+                        )}
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4 text-center">
+                            <Users size={24} className="mx-auto mb-2 text-blue-600 dark:text-blue-400" />
+                            <p className="text-xl font-bold text-foreground dark:text-white">{selectedCourse.students}</p>
+                            <p className="text-sm text-muted-foreground dark:text-slate-400">Học viên</p>
+                          </div>
+                          <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4 text-center">
+                            <BookOpen size={24} className="mx-auto mb-2 text-green-600 dark:text-green-400" />
+                            <p className="text-xl font-bold text-foreground dark:text-white">{selectedCourse.lessons}</p>
+                            <p className="text-sm text-muted-foreground dark:text-slate-400">Bài học</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
+                            <p className="text-muted-foreground dark:text-slate-400 text-sm mb-1">Danh mục</p>
+                            <p className="text-foreground dark:text-white font-medium">{selectedCourse.category}</p>
+                          </div>
+                          <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
+                            <p className="text-muted-foreground dark:text-slate-400 text-sm mb-1">Ngày tạo</p>
+                            <p className="text-foreground dark:text-white font-medium">{formatDate(selectedCourse.createdAt)}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-3 pt-4 border-t border-border dark:border-slate-800">
+                          <button
+                            onClick={() => handleEdit(selectedCourse.id)}
+                            className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-secondary dark:bg-slate-800 text-foreground dark:text-white hover:bg-secondary/80"
+                          >
+                            <Edit2 size={18} /> Chỉnh sửa
+                          </button>
+                          {(selectedCourse.status === "draft" || selectedCourse.status === "rejected") && (
+                            <button
+                              onClick={() => {
+                                handleSubmitForReview(selectedCourse.id)
+                                setViewMode(null)
+                                setSelectedCourse(null)
+                              }}
+                              className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-accent text-white hover:shadow-lg"
+                            >
+                              <Send size={18} /> {selectedCourse.status === "rejected" ? "Gửi duyệt lại" : "Gửi duyệt"}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {viewMode === "delete" && selectedCourse && selectedCourse.id === course.id && (
-                    <div className="fixed inset-0 z-[9999] bg-black/30 backdrop-blur-sm" style={{pointerEvents: 'auto'}}>
-                      <div
-                        className="absolute max-w-xs w-full bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl p-6 animate-fadeIn"
-                        style={menuRect ? {
-                          left: `calc(${menuRect.left + menuRect.width / 2}px - 160px)`,
-                          top: `calc(${menuRect.top + menuRect.height / 2}px - 180px)`,
-                        } : {left: '50%', top: '50%', transform: 'translate(-50%, -50%)'}}
-                      >
+                    <div className="absolute left-0 right-0 top-20 mx-auto z-[9999]">
+                      <div className="bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full mx-auto p-6 animate-fadeIn">
                         <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                           <Trash2 size={32} className="text-red-600 dark:text-red-400" />
                         </div>
@@ -534,127 +512,126 @@ useEffect(() => {
                   <th className="text-left py-4 px-6 font-semibold text-foreground dark:text-white">Giá</th>
                   <th className="text-left py-4 px-6 font-semibold text-foreground dark:text-white">Trạng thái</th>
                   <th className="text-left py-4 px-6 font-semibold text-foreground dark:text-white">Hành động</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={7} className="py-8 text-center text-muted-foreground dark:text-slate-400">
-                      Đang tải khóa học...
-                    </td>
-                  </tr>
-                ) : (
-                  filteredCourses.map((course) => (
-                    <tr
-                      key={course.id}
-                      className={`border-b border-border dark:border-slate-800 hover:bg-secondary dark:hover:bg-slate-800/50 transition-smooth relative ${
-                        menuOpenId === course.id ? "z-20" : "z-0"
-                      }`}
-                    >
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={course.thumbnail}
-                          alt={course.title}
-                          className="w-12 h-12 rounded-lg object-cover bg-secondary"
-                        />
-                        <div>
-                          <p className="font-medium text-foreground dark:text-white line-clamp-1">{course.title}</p>
-                          <p className="text-xs text-muted-foreground dark:text-slate-400">{course.lessons} bài học • {course.duration}</p>
-                        </div>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredCourses.map((course) => (
+                <tr key={course.id} className="border-b border-border dark:border-slate-800">
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={course.thumbnail}
+                        alt={course.title}
+                        className="w-12 h-12 rounded-lg object-cover bg-secondary"
+                      />
+                      <div>
+                        <p className="font-medium text-foreground dark:text-white line-clamp-1">{course.title}</p>
+                        <p className="text-xs text-muted-foreground dark:text-slate-400">{course.lessons} bài học • {course.duration}</p>
                       </div>
-                    </td>
-                    <td className="py-4 px-6">
-                      <span className="px-2 py-1 bg-secondary dark:bg-slate-800 rounded text-foreground dark:text-white text-xs">
-                        {course.category}
+                    </div>
+                  </td>
+                  <td className="py-4 px-6">
+                    <span className="px-2 py-1 bg-secondary dark:bg-slate-800 rounded text-foreground dark:text-white text-xs">
+                      {course.category}
+                    </span>
+                  </td>
+                  <td className="py-4 px-6 text-foreground dark:text-white">{course.students}</td>
+                  <td className="py-4 px-6">
+                    {course.rating > 0 ? (
+                      <span className="text-foreground dark:text-white flex items-center gap-1">
+                        {course.rating}
+                        <span className="text-yellow-500">★</span>
                       </span>
-                    </td>
-                    <td className="py-4 px-6 text-foreground dark:text-white">{course.students}</td>
-                    <td className="py-4 px-6">
-                      {course.rating > 0 ? (
-                        <span className="text-foreground dark:text-white flex items-center gap-1">
-                          {course.rating}
-                          <span className="text-yellow-500">★</span>
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground dark:text-slate-400">Chưa có</span>
-                      )}
-                    </td>
-                    <td className="py-4 px-6 text-foreground dark:text-white font-medium">₫{formatPrice(course.price)}</td>
-                    <td className="py-4 px-6">{getStatusBadge(course.status)}</td>
-                    <td className="py-4 px-6" data-dropdown>
-                      <div className="relative inline-flex" data-dropdown>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setMenuOpenId(menuOpenId === course.id ? null : course.id)
-                          }}
-                          className="p-2 hover:bg-secondary dark:hover:bg-slate-800 rounded-lg transition-smooth"
+                    ) : (
+                      <span className="text-muted-foreground dark:text-slate-400">Chưa có</span>
+                    )}
+                  </td>
+                  <td className="py-4 px-6 text-foreground dark:text-white font-medium">₫{formatPrice(course.price)}</td>
+                  <td className="py-4 px-6">{getStatusBadge(course.status)}</td>
+                  <td className="py-4 px-6" data-dropdown>
+                    <div className="relative inline-flex" data-dropdown>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setMenuOpenId(menuOpenId === course.id ? null : course.id)
+                        }}
+                        className="p-2 hover:bg-secondary dark:hover:bg-slate-800 rounded-lg transition-smooth"
+                      >
+                        <MoreVertical size={18} className="text-muted-foreground dark:text-slate-400" />
+                      </button>
+                      {menuOpenId === course.id && (
+                        <div
+                          className="fixed z-[100001] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden"
+                          style={(() => {
+                              if (!menuCoords) return {}
+
+                              const MENU_WIDTH = 220
+                              const MENU_HEIGHT = 180
+                              const GAP = 6
+
+                              // Neo menu vào cạnh phải của nút
+                              let left = menuCoords.right - MENU_WIDTH
+                              let top = menuCoords.bottom + GAP
+
+                              // Không cho tràn trái
+                              if (left < 8) left = 8
+
+                              // Không cho tràn phải
+                              if (left + MENU_WIDTH > window.innerWidth - 8) {
+                                left = window.innerWidth - MENU_WIDTH - 8
+                              }
+
+                              // Nếu tràn đáy → bật lên trên nút
+                              if (top + MENU_HEIGHT > window.innerHeight) {
+                                top = menuCoords.top - MENU_HEIGHT - GAP
+                              }
+
+                              return {
+                                position: "fixed",
+                                left: `${left}px`,
+                                top: `${top}px`,
+                                width: `${MENU_WIDTH}px`,
+                              }
+                            })()}
                         >
-                          <MoreVertical size={18} className="text-muted-foreground dark:text-slate-400" />
-                        </button>
-                        {menuOpenId === course.id && (
-                          <div
-                            className="absolute right-0 top-full mt-2 bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-lg shadow-xl z-[99999] min-w-48"
-                            data-dropdown
+                          {(course.status === "draft" || course.status === "pending") && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleSubmitForReview(course.id)
+                              }}
+                              className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-primary dark:text-accent"
+                            >
+                              <Send size={16} /> Gửi duyệt
+                            </button>
+                          )}
+                          {course.status === "rejected" && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleSubmitForReview(course.id)
+                              }}
+                              className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-primary dark:text-accent"
+                            >
+                              <Send size={16} /> Gửi duyệt lại
+                            </button>
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDeleteClick(course)
+                            }}
+                            className="w-full text-left px-4 py-2 hover:bg-destructive/10 dark:hover:bg-destructive/20 flex items-center gap-2 text-destructive rounded-b-lg"
                           >
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleViewDetails(course)
-                              }}
-                              className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-foreground dark:text-white rounded-t-lg"
-                            >
-                              <Eye size={16} /> Xem chi tiết
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleEdit(course.id)
-                              }}
-                              className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-foreground dark:text-white"
-                            >
-                              <Edit2 size={16} /> Chỉnh sửa
-                            </button>
-                            {course.status === "draft" && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleSubmitForReview(course.id)
-                                }}
-                                className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-primary dark:text-accent"
-                              >
-                                <Send size={16} /> Gửi duyệt
-                              </button>
-                            )}
-                            {course.status === "rejected" && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleSubmitForReview(course.id)
-                                }}
-                                className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-primary dark:text-accent"
-                              >
-                                <Send size={16} /> Gửi duyệt lại
-                              </button>
-                            )}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleDeleteClick(course)
-                              }}
-                              className="w-full text-left px-4 py-2 hover:bg-destructive/10 dark:hover:bg-destructive/20 flex items-center gap-2 text-destructive rounded-b-lg"
-                            >
-                              <Trash2 size={16} /> Xóa khóa học
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
+                            <Trash2 size={16} /> Xóa khóa học
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
             </table>
           </div>
           {!isLoading && filteredCourses.length === 0 && (
@@ -668,10 +645,9 @@ useEffect(() => {
 
       {/* View Course Detail Modal */}
       {viewMode === "view" && selectedCourse && (
-        <div className="hidden md:flex fixed inset-0 bg-black/60 z-[9999] items-center justify-center p-4">
         <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
-          <div className="bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4 p-4 border-b border-border dark:border-slate-800">
+          <div className="bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-card dark:bg-slate-900 border-b border-border dark:border-slate-800 p-6 flex items-center justify-between">
               <h2 className="text-xl font-bold text-foreground dark:text-white">Chi tiết khóa học</h2>
               <button
                 onClick={() => { setViewMode(null); setSelectedCourse(null); }}
@@ -680,21 +656,25 @@ useEffect(() => {
                 <XCircle size={20} className="text-muted-foreground" />
               </button>
             </div>
-            <div className="p-4">
-              <div className="flex gap-4 mb-4">
+
+            <div className="p-6 space-y-6">
+              {/* Course Header */}
+              <div className="flex gap-4">
                 <img
                   src={selectedCourse.thumbnail}
                   alt={selectedCourse.title}
-                  className="w-24 h-16 rounded-lg object-cover bg-secondary"
+                  className="w-32 h-24 rounded-lg object-cover bg-secondary"
                 />
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-foreground dark:text-white">{selectedCourse.title}</h3>
+                  <h3 className="text-xl font-bold text-foreground dark:text-white">{selectedCourse.title}</h3>
                   <p className="text-muted-foreground dark:text-slate-400 text-sm mt-1">{selectedCourse.description}</p>
                   <div className="mt-2">{getStatusBadge(selectedCourse.status)}</div>
                 </div>
               </div>
+
+              {/* Rejection Reason if rejected */}
               {selectedCourse.status === "rejected" && selectedCourse.rejectionReason && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mb-4">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
                   <div className="flex items-center gap-2 text-red-700 dark:text-red-400 mb-2">
                     <AlertCircle size={18} />
                     <span className="font-semibold">Lý do từ chối từ Admin</span>
@@ -702,7 +682,9 @@ useEffect(() => {
                   <p className="text-red-600 dark:text-red-300 text-sm">{selectedCourse.rejectionReason}</p>
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-4 mb-4">
+
+              {/* Course Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4 text-center">
                   <Users size={24} className="mx-auto mb-2 text-blue-600 dark:text-blue-400" />
                   <p className="text-2xl font-bold text-foreground dark:text-white">{selectedCourse.students}</p>
@@ -724,7 +706,9 @@ useEffect(() => {
                   <p className="text-sm text-muted-foreground dark:text-slate-400">Giá</p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 mb-4">
+
+              {/* Course Info */}
+              <div className="grid grid-cols-2 gap-4">
                 <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
                   <p className="text-muted-foreground dark:text-slate-400 text-sm mb-1">Danh mục</p>
                   <p className="text-foreground dark:text-white font-medium">{selectedCourse.category}</p>
@@ -734,6 +718,8 @@ useEffect(() => {
                   <p className="text-foreground dark:text-white font-medium">{formatDate(selectedCourse.createdAt)}</p>
                 </div>
               </div>
+
+              {/* Actions */}
               <div className="flex gap-3 pt-4 border-t border-border dark:border-slate-800">
                 <button
                   onClick={() => handleEdit(selectedCourse.id)}
@@ -757,13 +743,11 @@ useEffect(() => {
             </div>
           </div>
         </div>
-        </div>
       )}
 
       {/* Delete Confirmation Modal */}
       {viewMode === "delete" && selectedCourse && (
-        <div className="hidden md:flex fixed inset-0 bg-black/60 z-[9999] items-center justify-center p-4">
-        <div className="md:flex inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
           <div className="bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full">
             <div className="p-6 text-center">
               <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -790,72 +774,86 @@ useEffect(() => {
             </div>
           </div>
         </div>
-        </div>
       )}    
-{menuCourse && menuRect && typeof window !== "undefined" &&
-  (() => {
-    // Find the card element
-    const card = document.querySelector(`[data-course-card-id="${menuCourse.id}"]`)
-    if (!card || !menuRect) return null
-    const cardRect = card.getBoundingClientRect()
-    // Tính vị trí tương đối
-    const left = menuRect.left - cardRect.left
-    const top = menuRect.bottom - cardRect.top + 6
-    return createPortal(
-      <>
-        {/* Backdrop */}
-        <div
-          className="fixed inset-0 bg-black/40 z-[100000]"
-          onClick={() => { setMenuCourse(null); setMenuRect(null); setMenuAnchorId(null); }}
-        />
-        {/* Menu */}
-        <div
-          className="absolute z-[100001] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden"
-          style={{ right: window.innerWidth - menuRect.right, top, width: 220 }}
+{menuCourse && menuCoords && typeof window !== "undefined" &&
+  createPortal(
+    <>
+      {/* Menu - render trước backdrop */}
+      <div
+        className="fixed z-[100001] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden"
+        style={(() => {
+          if (!menuCoords) return {}
+          const MENU_WIDTH = 220;
+          const MENU_HEIGHT = 180;
+          const GAP = 6;
+          // Neo menu vào cạnh phải nút 3 chấm
+          let left = menuCoords.right - MENU_WIDTH;
+          let top = menuCoords.bottom + GAP;
+          // Chặn tràn trái
+          if (left < 8) left = 8;
+          // Chặn tràn phải
+          if (left + MENU_WIDTH > window.innerWidth - 8) {
+            left = window.innerWidth - MENU_WIDTH - 8;
+          }
+          // Nếu tràn đáy → bật lên trên nút
+          if (top + MENU_HEIGHT > window.innerHeight) {
+            top = menuCoords.top - MENU_HEIGHT - GAP;
+          }
+          return {
+            position: "fixed",
+            left: `${left}px`,
+            top: `${top}px`,
+            width: `${MENU_WIDTH}px`,
+          };
+        })()}
+      >
+        <button
+          onClick={() => {
+            handleViewDetails(menuCourse)
+            setMenuCourse(null); setMenuCoords(null);
+          }}
+          className="w-full px-4 py-4 flex items-center gap-3 hover:bg-secondary"
         >
+          <Eye size={18} /> Xem chi tiết
+        </button>
+        <button
+          onClick={() => {
+            handleEdit(menuCourse.id)
+            setMenuCourse(null); setMenuCoords(null);
+          }}
+          className="w-full px-4 py-4 flex items-center gap-3 hover:bg-secondary"
+        >
+          <Edit2 size={18} /> Chỉnh sửa
+        </button>
+        {(menuCourse.status === "draft" || menuCourse.status === "rejected") && (
           <button
             onClick={() => {
-              handleViewDetails(menuCourse)
-              setMenuCourse(null); setMenuRect(null); setMenuAnchorId(null);
+              handleSubmitForReview(menuCourse.id)
+              setMenuCourse(null); setMenuCoords(null);
             }}
-            className="w-full px-4 py-4 flex items-center gap-3 hover:bg-secondary"
+            className="w-full px-4 py-4 flex items-center gap-3 text-primary hover:bg-secondary"
           >
-            <Eye size={18} /> Xem chi tiết
+            <Send size={18} /> {menuCourse.status === "rejected" ? "Gửi duyệt lại" : "Gửi duyệt"}
           </button>
-          <button
-            onClick={() => {
-              handleEdit(menuCourse.id)
-              setMenuCourse(null); setMenuRect(null); setMenuAnchorId(null);
-            }}
-            className="w-full px-4 py-4 flex items-center gap-3 hover:bg-secondary"
-          >
-            <Edit2 size={18} /> Chỉnh sửa
-          </button>
-          {(menuCourse.status === "draft" || menuCourse.status === "rejected") && (
-            <button
-              onClick={() => {
-                handleSubmitForReview(menuCourse.id)
-                setMenuCourse(null); setMenuRect(null); setMenuAnchorId(null);
-              }}
-              className="w-full px-4 py-4 flex items-center gap-3 text-primary hover:bg-secondary"
-            >
-              <Send size={18} /> {menuCourse.status === "rejected" ? "Gửi duyệt lại" : "Gửi duyệt"}
-            </button>
-          )}
-          <button
-            onClick={() => {
-              handleDeleteClick(menuCourse)
-              setMenuCourse(null); setMenuRect(null); setMenuAnchorId(null);
-            }}
-            className="w-full px-4 py-4 flex items-center gap-3 text-red-600 hover:bg-red-50"
-          >
-            <Trash2 size={18} /> Xóa khóa học
-          </button>
-        </div>
-      </>,
-      card
-    )
-  })()}
-    </div>     
+        )}
+        <button
+          onClick={() => {
+            handleDeleteClick(menuCourse)
+            setMenuCourse(null); setMenuCoords(null);
+          }}
+          className="w-full px-4 py-4 flex items-center gap-3 text-red-600 hover:bg-red-50"
+        >
+          <Trash2 size={18} /> Xóa khóa học
+        </button>
+      </div>
+      {/* Backdrop - render sau menu */}
+      <div
+        className="fixed inset-0 bg-black/40 z-[100000]"
+        onClick={() => { setMenuCourse(null); setMenuCoords(null); }}
+      />
+    </>,
+    document.body
+  )}
+    </div>
   )
 }

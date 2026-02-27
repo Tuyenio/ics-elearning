@@ -23,7 +23,6 @@ import {
   BookOpen,
   Users
 } from "lucide-react"
-import React from "react"
 
 interface Exam {
   id: string
@@ -65,7 +64,6 @@ export default function TeacherExamsPage() {
   const [selectedExam, setSelectedExam] = useState<Exam | null>(null)
   const [viewMode, setViewMode] = useState<"view" | "delete" | null>(null)
   const [modalPos, setModalPos] = useState<{ top: number; left: number } | null>(null)
-  const detailBtnRefs = React.useRef<{ [key: string]: HTMLButtonElement | null }>({})
 
   useEffect(() => {
     fetchExams()
@@ -602,26 +600,17 @@ export default function TeacherExamsPage() {
         {/* View Modal */}
         <div className="hidden md:flex">
   {selectedExam && viewMode === "view" && (
-    <div className="fixed inset-0 bg-black/50 z-90 flex items-center justify-center">
+    <div className="fixed inset-0 bg-black/50 z-90 flex items-center justify-top ">
       <div className="bg-card border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl animate-scaleIn">
         
         {/* Header */}
         <div className="p-6 border-b border-border flex items-center justify-between">
           <h2 className="text-xl font-bold">Chi tiết bài thi</h2>
           <button
-          ref={el => { detailBtnRefs.current[selectedExam.id] = el }}
             onClick={() => {
-              const btn = detailBtnRefs.current[ selectedExam.id];
-    if (btn) {
-      const rect = btn.getBoundingClientRect();
-      setModalPos({
-        top: rect.bottom + 8,
-        left: rect.left,
-      });
-    }
-    setSelectedExam(selectedExam);
-    setViewMode("view");
-  }}
+              setViewMode(null)
+              setSelectedExam(null)
+            }}
             className="p-2 hover:bg-secondary rounded-lg"
           >
             <X size={20} />

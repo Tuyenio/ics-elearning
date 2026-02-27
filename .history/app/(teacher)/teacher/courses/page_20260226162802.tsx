@@ -40,13 +40,7 @@ interface BackendCourse {
   } | null
   lessons?: Array<{ id: string }>
 }
-const InfoItem = ({ icon, label, value }: any) => (
-  <div className="bg-secondary rounded-xl p-3 text-center">
-    <div className="flex justify-center mb-1">{icon}</div>
-    <div className="text-lg font-bold">{value}</div>
-    <div className="text-xs text-muted-foreground">{label}</div>
-  </div>
-)
+
 export default function TeacherCoursesPage() {
   const router = useRouter()
   const [courses, setCourses] = useState<Course[]>([])
@@ -75,6 +69,7 @@ export default function TeacherCoursesPage() {
       pending: "pending",
       rejected: "rejected",
     }
+
     const durationHours = course.duration ? Math.round(course.duration / 60) : 0
     return {
       id: course.id,
@@ -357,11 +352,7 @@ useEffect(() => {
           ) : (
             <div className="grid grid-cols-1 gap-6">
               {filteredCourses.map((course) => (
-                <div
-                  key={course.id}
-                  data-course-card-id={course.id}
-                  className={`relative border border-border dark:border-slate-800 rounded-xl p-4 bg-white dark:bg-slate-900 shadow-sm flex flex-col gap-2 animate-fadeIn ${menuCourse?.id === course.id ? "z-[9999]" : "z-0"}`}
-                >
+                <div key={course.id} className="relative border border-border dark:border-slate-800 rounded-xl p-4 bg-white dark:bg-slate-900 shadow-sm flex flex-col gap-2 animate-fadeIn" data-course-card-id={course.id}>
                   <div className="flex items-center gap-3 mb-2">
                     <img
                       src={course.thumbnail}
@@ -415,83 +406,90 @@ useEffect(() => {
                     <span className="text-xs text-muted-foreground dark:text-slate-400">Trạng thái:</span>
                     {getStatusBadge(course.status)}
                   </div>
-                  {/* INLINE DETAIL – NEO THEO CARD */}
-{viewMode === "view" && selectedCourse?.id === course.id && (
-  <div className="mt-4 rounded-xl border border-border bg-secondary p-4 animate-slideDown">
-
-    {/* Header */}
-    <div className="flex items-start gap-3 mb-3">
-      <img
-        src={course.thumbnail}
-        className="w-20 h-14 rounded-lg object-cover"
-      />
-
-      <div className="flex-1">
-        <h3 className="font-semibold text-sm">
-          {course.title}
-        </h3>
-        <p className="text-xs text-muted-foreground">
-          {course.description}
-        </p>
-        <div className="mt-1">
-          {getStatusBadge(course.status)}
-        </div>
-      </div>
-
-      <button
-        onClick={() => {
-          setViewMode(null)
-          setSelectedCourse(null)
-        }}
-        className="text-muted-foreground"
-      >
-        <XCircle size={18} />
-      </button>
-    </div>
-
-    {/* Stats */}
-    <div className="grid grid-cols-2 gap-2 mb-3">
-      <InfoItem icon={<Users size={14} />} label="Học viên" value={course.students} />
-      <InfoItem icon={<BookOpen size={14} />} label="Bài học" value={course.lessons} />
-      <InfoItem icon={<Clock size={14} />} label="Thời lượng" value={course.duration} />
-      <InfoItem
-        icon={<DollarSign size={14} />}
-        label="Giá"
-        value={`₫${formatPrice(course.price)}`}
-      />
-    </div>
-
-    {/* Actions */}
-    <div className="flex gap-2">
-      <button
-        onClick={() => handleEdit(course.id)}
-        className="flex-1 py-2 rounded-lg bg-background border text-sm"
-      >
-        Chỉnh sửa
-      </button>
-
-      {(course.status === "draft" || course.status === "rejected") && (
-        <button
-          onClick={() => handleSubmitForReview(course.id)}
-          className="flex-1 py-2 rounded-lg bg-primary text-white text-sm"
-        >
-          {course.status === "rejected"
-            ? "Gửi duyệt lại"
-            : "Gửi duyệt"}
-        </button>
-      )}
-    </div>
-  </div>
-)}
+                  
+                  {/* Modals - Mobile: anchor to card */}
+                  {viewMode === "view" && selectedCourse && selectedCourse.id === course.id && (
+                    <div className="absolute left-0 right-0 top-20 mx-auto z-[9999]">
+                      {/* Modal content: reuse existing modal code, but as a card-anchored popup */}
+                      <div className="bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full mx-auto p-6 animate-fadeIn">
+                        <div className="flex items-center justify-between mb-4">
+                          <h2 className="text-xl font-bold text-foreground dark:text-white">Chi tiết khóa học</h2>
+                          <button
+                            onClick={() => { setViewMode(null); setSelectedCourse(null); }}
+                            className="p-2 hover:bg-secondary dark:hover:bg-slate-800 rounded-lg transition-smooth"
+                          >
+                            <XCircle size={20} className="text-muted-foreground" />
+                          </button>
+                        </div>
+                        <div className="flex gap-4 mb-4">
+                          <img
+                            src={selectedCourse.thumbnail}
+                            alt={selectedCourse.title}
+                            className="w-24 h-16 rounded-lg object-cover bg-secondary"
+                          />
+                          <div className="flex-1">
+                            <h3 className="text-lg font-bold text-foreground dark:text-white">{selectedCourse.title}</h3>
+                            <p className="text-muted-foreground dark:text-slate-400 text-sm mt-1">{selectedCourse.description}</p>
+                            <div className="mt-2">{getStatusBadge(selectedCourse.status)}</div>
+                          </div>
+                        </div>
+                        {selectedCourse.status === "rejected" && selectedCourse.rejectionReason && (
+                          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mb-4">
+                            <div className="flex items-center gap-2 text-red-700 dark:text-red-400 mb-2">
+                              <AlertCircle size={18} />
+                              <span className="font-semibold">Lý do từ chối từ Admin</span>
+                            </div>
+                            <p className="text-red-600 dark:text-red-300 text-sm">{selectedCourse.rejectionReason}</p>
+                          </div>
+                        )}
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4 text-center">
+                            <Users size={24} className="mx-auto mb-2 text-blue-600 dark:text-blue-400" />
+                            <p className="text-xl font-bold text-foreground dark:text-white">{selectedCourse.students}</p>
+                            <p className="text-sm text-muted-foreground dark:text-slate-400">Học viên</p>
+                          </div>
+                          <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4 text-center">
+                            <BookOpen size={24} className="mx-auto mb-2 text-green-600 dark:text-green-400" />
+                            <p className="text-xl font-bold text-foreground dark:text-white">{selectedCourse.lessons}</p>
+                            <p className="text-sm text-muted-foreground dark:text-slate-400">Bài học</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
+                            <p className="text-muted-foreground dark:text-slate-400 text-sm mb-1">Danh mục</p>
+                            <p className="text-foreground dark:text-white font-medium">{selectedCourse.category}</p>
+                          </div>
+                          <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
+                            <p className="text-muted-foreground dark:text-slate-400 text-sm mb-1">Ngày tạo</p>
+                            <p className="text-foreground dark:text-white font-medium">{formatDate(selectedCourse.createdAt)}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-3 pt-4 border-t border-border dark:border-slate-800">
+                          <button
+                            onClick={() => handleEdit(selectedCourse.id)}
+                            className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-secondary dark:bg-slate-800 text-foreground dark:text-white hover:bg-secondary/80"
+                          >
+                            <Edit2 size={18} /> Chỉnh sửa
+                          </button>
+                          {(selectedCourse.status === "draft" || selectedCourse.status === "rejected") && (
+                            <button
+                              onClick={() => {
+                                handleSubmitForReview(selectedCourse.id)
+                                setViewMode(null)
+                                setSelectedCourse(null)
+                              }}
+                              className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-accent text-white hover:shadow-lg"
+                            >
+                              <Send size={18} /> {selectedCourse.status === "rejected" ? "Gửi duyệt lại" : "Gửi duyệt"}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {viewMode === "delete" && selectedCourse && selectedCourse.id === course.id && (
-                    <div className="fixed inset-0 z-[9999] bg-black/30 backdrop-blur-sm" style={{pointerEvents: 'auto'}}>
-                      <div
-                        className="absolute max-w-xs w-full bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl p-6 animate-fadeIn"
-                        style={menuRect ? {
-                          left: `calc(${menuRect.left + menuRect.width / 2}px - 160px)`,
-                          top: `calc(${menuRect.top + menuRect.height / 2}px - 180px)`,
-                        } : {left: '50%', top: '50%', transform: 'translate(-50%, -50%)'}}
-                      >
+                    <div className="absolute left-0 right-0 top-20 mx-auto z-[9999]">
+                      <div className="bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full mx-auto p-6 animate-fadeIn">
                         <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                           <Trash2 size={32} className="text-red-600 dark:text-red-400" />
                         </div>
@@ -668,10 +666,9 @@ useEffect(() => {
 
       {/* View Course Detail Modal */}
       {viewMode === "view" && selectedCourse && (
-        <div className="hidden md:flex fixed inset-0 bg-black/60 z-[9999] items-center justify-center p-4">
         <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
-          <div className="bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4 p-4 border-b border-border dark:border-slate-800">
+          <div className="bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-card dark:bg-slate-900 border-b border-border dark:border-slate-800 p-6 flex items-center justify-between">
               <h2 className="text-xl font-bold text-foreground dark:text-white">Chi tiết khóa học</h2>
               <button
                 onClick={() => { setViewMode(null); setSelectedCourse(null); }}
@@ -680,21 +677,25 @@ useEffect(() => {
                 <XCircle size={20} className="text-muted-foreground" />
               </button>
             </div>
-            <div className="p-4">
-              <div className="flex gap-4 mb-4">
+
+            <div className="p-6 space-y-6">
+              {/* Course Header */}
+              <div className="flex gap-4">
                 <img
                   src={selectedCourse.thumbnail}
                   alt={selectedCourse.title}
-                  className="w-24 h-16 rounded-lg object-cover bg-secondary"
+                  className="w-32 h-24 rounded-lg object-cover bg-secondary"
                 />
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-foreground dark:text-white">{selectedCourse.title}</h3>
+                  <h3 className="text-xl font-bold text-foreground dark:text-white">{selectedCourse.title}</h3>
                   <p className="text-muted-foreground dark:text-slate-400 text-sm mt-1">{selectedCourse.description}</p>
                   <div className="mt-2">{getStatusBadge(selectedCourse.status)}</div>
                 </div>
               </div>
+
+              {/* Rejection Reason if rejected */}
               {selectedCourse.status === "rejected" && selectedCourse.rejectionReason && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mb-4">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
                   <div className="flex items-center gap-2 text-red-700 dark:text-red-400 mb-2">
                     <AlertCircle size={18} />
                     <span className="font-semibold">Lý do từ chối từ Admin</span>
@@ -702,7 +703,9 @@ useEffect(() => {
                   <p className="text-red-600 dark:text-red-300 text-sm">{selectedCourse.rejectionReason}</p>
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-4 mb-4">
+
+              {/* Course Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4 text-center">
                   <Users size={24} className="mx-auto mb-2 text-blue-600 dark:text-blue-400" />
                   <p className="text-2xl font-bold text-foreground dark:text-white">{selectedCourse.students}</p>
@@ -724,7 +727,9 @@ useEffect(() => {
                   <p className="text-sm text-muted-foreground dark:text-slate-400">Giá</p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 mb-4">
+
+              {/* Course Info */}
+              <div className="grid grid-cols-2 gap-4">
                 <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
                   <p className="text-muted-foreground dark:text-slate-400 text-sm mb-1">Danh mục</p>
                   <p className="text-foreground dark:text-white font-medium">{selectedCourse.category}</p>
@@ -734,6 +739,8 @@ useEffect(() => {
                   <p className="text-foreground dark:text-white font-medium">{formatDate(selectedCourse.createdAt)}</p>
                 </div>
               </div>
+
+              {/* Actions */}
               <div className="flex gap-3 pt-4 border-t border-border dark:border-slate-800">
                 <button
                   onClick={() => handleEdit(selectedCourse.id)}
@@ -757,13 +764,11 @@ useEffect(() => {
             </div>
           </div>
         </div>
-        </div>
       )}
 
       {/* Delete Confirmation Modal */}
       {viewMode === "delete" && selectedCourse && (
-        <div className="hidden md:flex fixed inset-0 bg-black/60 z-[9999] items-center justify-center p-4">
-        <div className="md:flex inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
           <div className="bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full">
             <div className="p-6 text-center">
               <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -789,7 +794,6 @@ useEffect(() => {
               </div>
             </div>
           </div>
-        </div>
         </div>
       )}    
 {menuCourse && menuRect && typeof window !== "undefined" &&
@@ -856,6 +860,6 @@ useEffect(() => {
       card
     )
   })()}
-    </div>     
+    </div>
   )
 }

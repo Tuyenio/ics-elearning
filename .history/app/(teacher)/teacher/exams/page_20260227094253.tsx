@@ -23,7 +23,6 @@ import {
   BookOpen,
   Users
 } from "lucide-react"
-import React from "react"
 
 interface Exam {
   id: string
@@ -65,7 +64,6 @@ export default function TeacherExamsPage() {
   const [selectedExam, setSelectedExam] = useState<Exam | null>(null)
   const [viewMode, setViewMode] = useState<"view" | "delete" | null>(null)
   const [modalPos, setModalPos] = useState<{ top: number; left: number } | null>(null)
-  const detailBtnRefs = React.useRef<{ [key: string]: HTMLButtonElement | null }>({})
 
   useEffect(() => {
     fetchExams()
@@ -480,41 +478,39 @@ export default function TeacherExamsPage() {
                       <MoreVertical size={18} className="text-muted-foreground" />
                     </button>
                     {openMenu === exam.id && (
-                      <div className="fixed inset-0 z-50 flex items-end justify-end" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => setOpenMenu(null)}>
-                        <div className="w-full max-w-xs mx-auto mb-6 bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-xl shadow-lg" onClick={e => e.stopPropagation()}>
-                          {exam.status !== "approved" && (
-                            <button
-                              onClick={() => handleEdit(exam.id)}
-                              className="w-full px-4 py-3 text-left hover:bg-secondary dark:hover:bg-slate-700 flex items-center gap-2 rounded-t-xl"
-                            >
-                              <Edit2 size={16} />
-                              Chỉnh sửa
-                            </button>
-                          )}
-                          {exam.type === "official" && exam.certificateTemplateId && exam.status !== "approved" && (
-                            <button
-                              onClick={() => handleRemoveCertificate(exam.id)}
-                              className="w-full px-4 py-3 text-left hover:bg-secondary dark:hover:bg-slate-700 flex items-center gap-2 text-amber-600"
-                            >
-                              <Award size={16} />
-                              Bỏ chứng chỉ
-                            </button>
-                          )}
-                          {exam.status !== "approved" && (
-                            <button
-                              onClick={() => handleDeleteClick(exam)}
-                              className="w-full px-4 py-3 text-left hover:bg-secondary dark:hover:bg-slate-700 flex items-center gap-2 text-red-500 rounded-b-xl"
-                            >
-                              <Trash2 size={16} />
-                              Xóa bài thi
-                            </button>
-                          )}
-                          {exam.status === "approved" && (
-                            <p className="px-4 py-3 text-sm text-muted-foreground dark:text-slate-400">
-                              Không thể chỉnh sửa bài thi đã duyệt
-                            </p>
-                          )}
-                        </div>
+                      <div className="absolute right-0 mt-2 w-48 bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-xl shadow-lg z-10">
+                        {exam.status !== "approved" && (
+                          <button
+                            onClick={() => handleEdit(exam.id)}
+                            className="w-full px-4 py-3 text-left hover:bg-secondary dark:hover:bg-slate-700 flex items-center gap-2 rounded-t-xl"
+                          >
+                            <Edit2 size={16} />
+                            Chỉnh sửa
+                          </button>
+                        )}
+                        {exam.type === "official" && exam.certificateTemplateId && exam.status !== "approved" && (
+                          <button
+                            onClick={() => handleRemoveCertificate(exam.id)}
+                            className="w-full px-4 py-3 text-left hover:bg-secondary dark:hover:bg-slate-700 flex items-center gap-2 text-amber-600"
+                          >
+                            <Award size={16} />
+                            Bỏ chứng chỉ
+                          </button>
+                        )}
+                        {exam.status !== "approved" && (
+                          <button
+                            onClick={() => handleDeleteClick(exam)}
+                            className="w-full px-4 py-3 text-left hover:bg-secondary dark:hover:bg-slate-700 flex items-center gap-2 text-red-500 rounded-b-xl"
+                          >
+                            <Trash2 size={16} />
+                            Xóa bài thi
+                          </button>
+                        )}
+                        {exam.status === "approved" && (
+                          <p className="px-4 py-3 text-sm text-muted-foreground dark:text-slate-400">
+                            Không thể chỉnh sửa bài thi đã duyệt
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>
@@ -602,31 +598,24 @@ export default function TeacherExamsPage() {
         {/* View Modal */}
         <div className="hidden md:flex">
   {selectedExam && viewMode === "view" && (
-    <div className="fixed inset-0 bg-black/50 z-90 flex items-center justify-center">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
       <div className="bg-card border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl animate-scaleIn">
         
         {/* Header */}
         <div className="p-6 border-b border-border flex items-center justify-between">
           <h2 className="text-xl font-bold">Chi tiết bài thi</h2>
           <button
-          ref={el => { detailBtnRefs.current[selectedExam.id] = el }}
             onClick={() => {
-              const btn = detailBtnRefs.current[ selectedExam.id];
-    if (btn) {
-      const rect = btn.getBoundingClientRect();
-      setModalPos({
-        top: rect.bottom + 8,
-        left: rect.left,
-      });
-    }
-    setSelectedExam(selectedExam);
-    setViewMode("view");
-  }}
+              setViewMode(null)
+              setSelectedExam(null)
+            }}
             className="p-2 hover:bg-secondary rounded-lg"
           >
             <X size={20} />
           </button>
         </div>
+
+
               <div className="p-6 space-y-6">
                 <div>
                   <h3 className="text-lg font-semibold text-foreground dark:text-white mb-2">{selectedExam.title}</h3>
@@ -728,6 +717,7 @@ export default function TeacherExamsPage() {
             </div>
           </div>
         )}
+        
       </div>
     </div>
   )

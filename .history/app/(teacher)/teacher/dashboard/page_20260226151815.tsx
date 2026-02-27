@@ -340,102 +340,47 @@ export default function TeacherDashboard() {
           </div>
         </div>
 
-        {/* Recent Enrollments - Mobile: Cards, Desktop: Table */}
+        {/* Recent Enrollments as Cards */}
         <div className="bg-card dark:bg-slate-900/60 border border-border dark:border-slate-800 rounded-2xl p-6">
           <h3 className="font-semibold text-foreground dark:text-white mb-4">Đăng ký gần đây</h3>
-          {/* Mobile: Cards */}
-          <div className="block md:hidden">
-            {recentEnrollments.length === 0 ? (
-              <div className="py-4 text-center text-muted-foreground">Chưa có đăng ký nào</div>
-            ) : (
-              <div className="grid grid-cols-1 gap-6">
-                {recentEnrollments.map((enrollment) => (
-                  <div
-                    key={enrollment.id}
-                    className="border border-border dark:border-slate-800 rounded-xl p-4 bg-white dark:bg-slate-900 shadow-sm flex flex-col gap-2 animate-fadeIn"
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
-                        {enrollment.studentName?.charAt(0) || "?"}
-                      </div>
-                      <div>
-                        <div className="font-semibold text-foreground dark:text-white text-base">{enrollment.studentName}</div>
-                        <div className="text-xs text-muted-foreground dark:text-slate-400">{enrollment.courseName}</div>
-                      </div>
+          {recentEnrollments.length === 0 ? (
+            <div className="py-4 text-center text-muted-foreground">Chưa có đăng ký nào</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {recentEnrollments.map((enrollment) => (
+                <div
+                  key={enrollment.id}
+                  className="border border-border dark:border-slate-800 rounded-xl p-4 bg-white dark:bg-slate-900 shadow-sm flex flex-col gap-2 animate-fadeIn"
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+                      {enrollment.studentName?.charAt(0) || "?"}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground dark:text-slate-400">Ngày đăng ký:</span>
-                      <span className="text-sm text-foreground dark:text-white">{enrollment.createdAt}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground dark:text-slate-400">Trạng thái:</span>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          enrollment.status === "completed"
-                            ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                            : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                        }`}
-                      >
-                        {enrollment.status === "completed" ? "Hoàn thành" : "Đang học"}
-                      </span>
+                    <div>
+                      <div className="font-semibold text-foreground dark:text-white text-base">{enrollment.studentName}</div>
+                      <div className="text-xs text-muted-foreground dark:text-slate-400">{enrollment.courseName}</div>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-          {/* Desktop: Table */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border dark:border-slate-800">
-                  <th className="text-left py-3 px-4 font-medium text-muted-foreground dark:text-slate-400">
-                    Học viên
-                  </th>
-                  <th className="text-left py-3 px-4 font-medium text-muted-foreground dark:text-slate-400">
-                    Khóa học
-                  </th>
-                  <th className="text-left py-3 px-4 font-medium text-muted-foreground dark:text-slate-400">
-                    Ngày đăng ký
-                  </th>
-                  <th className="text-left py-3 px-4 font-medium text-muted-foreground dark:text-slate-400">
-                    Trạng thái
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentEnrollments.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="py-4 text-center text-muted-foreground">
-                      Chưa có đăng ký nào
-                    </td>
-                  </tr>
-                ) : (
-                  recentEnrollments.map((enrollment) => (
-                    <tr
-                      key={enrollment.id}
-                      className="border-b border-border dark:border-slate-800 hover:bg-secondary dark:hover:bg-slate-800 transition-smooth"
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground dark:text-slate-400">Ngày đăng ký:</span>
+                    <span className="text-sm text-foreground dark:text-white">{enrollment.createdAt}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground dark:text-slate-400">Trạng thái:</span>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        enrollment.status === "completed"
+                          ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                          : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                      }`}
                     >
-                      <td className="py-3 px-4 text-foreground dark:text-white">{enrollment.studentName}</td>
-                      <td className="py-3 px-4 text-foreground dark:text-white">{enrollment.courseName}</td>
-                      <td className="py-3 px-4 text-muted-foreground dark:text-slate-400">{enrollment.createdAt}</td>
-                      <td className="py-3 px-4">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            enrollment.status === "completed"
-                              ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                              : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                          }`}
-                        >
-                          {enrollment.status === "completed" ? "Hoàn thành" : "Đang học"}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                      {enrollment.status === "completed" ? "Hoàn thành" : "Đang học"}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

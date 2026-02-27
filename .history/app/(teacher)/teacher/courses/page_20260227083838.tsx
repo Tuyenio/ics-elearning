@@ -855,7 +855,84 @@ useEffect(() => {
       </>,
       card
     )
+    
   })()}
+  
+  {/* MOBILE – View Course Detail Modal */}
+{viewMode === "view" && selectedCourse && (
+  <div className="md:hidden fixed inset-0 z-[100000] bg-black/50 flex items-end">
+    {/* Bottom Sheet */}
+    <div className="w-full bg-card dark:bg-slate-900 rounded-t-3xl max-h-[90vh] overflow-y-auto animate-slideUp">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-border">
+        <h2 className="text-lg font-bold">Chi tiết khóa học</h2>
+        <button
+          onClick={() => { setViewMode(null); setSelectedCourse(null) }}
+          className="p-2 rounded-lg hover:bg-secondary"
+        >
+          <XCircle size={22} />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="p-4 space-y-4">
+        <div className="flex gap-3">
+          <img
+            src={selectedCourse.thumbnail}
+            className="w-24 h-16 rounded-lg object-cover"
+          />
+          <div>
+            <h3 className="font-semibold">{selectedCourse.title}</h3>
+            <p className="text-sm text-muted-foreground">
+              {selectedCourse.description}
+            </p>
+            <div className="mt-2">
+              {getStatusBadge(selectedCourse.status)}
+            </div>
+          </div>
+        </div>
+
+        {selectedCourse.status === "rejected" && selectedCourse.rejectionReason && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-600">
+            <strong>Lý do từ chối:</strong><br />
+            {selectedCourse.rejectionReason}
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-3">
+          <InfoItem icon={<Users size={18} />} label="Học viên" value={selectedCourse.students} />
+          <InfoItem icon={<BookOpen size={18} />} label="Bài học" value={selectedCourse.lessons} />
+          <InfoItem icon={<Clock size={18} />} label="Thời lượng" value={selectedCourse.duration} />
+          <InfoItem icon={<DollarSign size={18} />} label="Giá" value={`₫${formatPrice(selectedCourse.price)}`} />
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-3 pt-4 border-t">
+          <button
+            onClick={() => handleEdit(selectedCourse.id)}
+            className="flex-1 py-3 rounded-xl bg-secondary font-medium"
+          >
+            Chỉnh sửa
+          </button>
+
+          {(selectedCourse.status === "draft" || selectedCourse.status === "rejected") && (
+            <button
+              onClick={() => {
+                handleSubmitForReview(selectedCourse.id)
+                setViewMode(null)
+                setSelectedCourse(null)
+              }}
+              className="flex-1 py-3 rounded-xl bg-primary text-white font-medium"
+            >
+              {selectedCourse.status === "rejected" ? "Gửi duyệt lại" : "Gửi duyệt"}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+)}
     </div>     
   )
 }

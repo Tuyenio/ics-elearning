@@ -23,7 +23,6 @@ import {
   BookOpen,
   Users
 } from "lucide-react"
-import React from "react"
 
 interface Exam {
   id: string
@@ -65,7 +64,6 @@ export default function TeacherExamsPage() {
   const [selectedExam, setSelectedExam] = useState<Exam | null>(null)
   const [viewMode, setViewMode] = useState<"view" | "delete" | null>(null)
   const [modalPos, setModalPos] = useState<{ top: number; left: number } | null>(null)
-  const detailBtnRefs = React.useRef<{ [key: string]: HTMLButtonElement | null }>({})
 
   useEffect(() => {
     fetchExams()
@@ -602,99 +600,86 @@ export default function TeacherExamsPage() {
         {/* View Modal */}
         <div className="hidden md:flex">
   {selectedExam && viewMode === "view" && (
-    <div className="fixed inset-0 bg-black/50 z-90 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}>
       <div className="bg-card border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl animate-scaleIn">
-        
         {/* Header */}
         <div className="p-6 border-b border-border flex items-center justify-between">
           <h2 className="text-xl font-bold">Chi tiết bài thi</h2>
           <button
-          ref={el => { detailBtnRefs.current[selectedExam.id] = el }}
             onClick={() => {
-              const btn = detailBtnRefs.current[ selectedExam.id];
-    if (btn) {
-      const rect = btn.getBoundingClientRect();
-      setModalPos({
-        top: rect.bottom + 8,
-        left: rect.left,
-      });
-    }
-    setSelectedExam(selectedExam);
-    setViewMode("view");
-  }}
+              setViewMode(null)
+              setSelectedExam(null)
+            }}
             className="p-2 hover:bg-secondary rounded-lg"
           >
             <X size={20} />
           </button>
         </div>
-              <div className="p-6 space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground dark:text-white mb-2">{selectedExam.title}</h3>
-                  <p className="text-muted-foreground dark:text-slate-400">{selectedExam.description}</p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-secondary/50 dark:bg-slate-800/50 p-4 rounded-xl">
-                    <p className="text-sm text-muted-foreground dark:text-slate-400">Loại bài thi</p>
-                    <div className="mt-1">{getTypeBadge(selectedExam.type)}</div>
-                  </div>
-                  <div className="bg-secondary/50 dark:bg-slate-800/50 p-4 rounded-xl">
-                    <p className="text-sm text-muted-foreground dark:text-slate-400">Trạng thái</p>
-                    <div className="mt-1">{getStatusBadge(selectedExam.status)}</div>
-                  </div>
-                  <div className="bg-secondary/50 dark:bg-slate-800/50 p-4 rounded-xl">
-                    <p className="text-sm text-muted-foreground dark:text-slate-400">Khóa học</p>
-                    <p className="text-foreground dark:text-white font-medium">{selectedExam.courseName}</p>
-                  </div>
-                  <div className="bg-secondary/50 dark:bg-slate-800/50 p-4 rounded-xl">
-                    <p className="text-sm text-muted-foreground dark:text-slate-400">Thời gian làm bài</p>
-                    <p className="text-foreground dark:text-white font-medium">{selectedExam.timeLimit} phút</p>
-                  </div>
-                  <div className="bg-secondary/50 dark:bg-slate-800/50 p-4 rounded-xl">
-                    <p className="text-sm text-muted-foreground dark:text-slate-400">Số câu hỏi</p>
-                    <p className="text-foreground dark:text-white font-medium">{selectedExam.questionsCount} câu</p>
-                  </div>
-                  <div className="bg-secondary/50 dark:bg-slate-800/50 p-4 rounded-xl">
-                    <p className="text-sm text-muted-foreground dark:text-slate-400">Điểm đạt</p>
-                    <p className="text-foreground dark:text-white font-medium">{selectedExam.passingScore}%</p>
-                  </div>
-                  <div className="bg-secondary/50 dark:bg-slate-800/50 p-4 rounded-xl">
-                    <p className="text-sm text-muted-foreground dark:text-slate-400">Số lần thi tối đa</p>
-                    <p className="text-foreground dark:text-white font-medium">{selectedExam.maxAttempts} lần</p>
-                  </div>
-                  <div className="bg-secondary/50 dark:bg-slate-800/50 p-4 rounded-xl">
-                    <p className="text-sm text-muted-foreground dark:text-slate-400">Lượt thi</p>
-                    <p className="text-foreground dark:text-white font-medium">{selectedExam.attemptCount}</p>
-                  </div>
-                </div>
-
-                {selectedExam.type === "official" && (selectedExam.certificateTemplateName || getTemplateName(selectedExam.certificateTemplateId)) && (
-                  <div className="bg-purple-500/10 border border-purple-500/20 p-4 rounded-xl">
-                    <div className="flex items-center gap-2 text-purple-500">
-                      <Award size={20} />
-                      <span className="font-medium">
-                        Chứng chỉ: {selectedExam.certificateTemplateName || getTemplateName(selectedExam.certificateTemplateId)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-purple-400 mt-1">
-                      Học viên đạt điểm sẽ được cấp chứng chỉ này
-                    </p>
-                  </div>
-                )}
-
-                {selectedExam.status === "rejected" && selectedExam.rejectionReason && (
-                  <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl">
-                    <div className="flex items-center gap-2 text-red-500 mb-2">
-                      <AlertCircle size={20} />
-                      <span className="font-medium">Lý do từ chối</span>
-                    </div>
-                    <p className="text-red-400">{selectedExam.rejectionReason}</p>
-                  </div>
-                )}
-              </div>
+        <div className="p-6 space-y-6">
+          <div>
+            <h3 className="text-lg font-semibold text-foreground dark:text-white mb-2">{selectedExam.title}</h3>
+            <p className="text-muted-foreground dark:text-slate-400">{selectedExam.description}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-secondary/50 dark:bg-slate-800/50 p-4 rounded-xl">
+              <p className="text-sm text-muted-foreground dark:text-slate-400">Loại bài thi</p>
+              <div className="mt-1">{getTypeBadge(selectedExam.type)}</div>
+            </div>
+            <div className="bg-secondary/50 dark:bg-slate-800/50 p-4 rounded-xl">
+              <p className="text-sm text-muted-foreground dark:text-slate-400">Trạng thái</p>
+              <div className="mt-1">{getStatusBadge(selectedExam.status)}</div>
+            </div>
+            <div className="bg-secondary/50 dark:bg-slate-800/50 p-4 rounded-xl">
+              <p className="text-sm text-muted-foreground dark:text-slate-400">Khóa học</p>
+              <p className="text-foreground dark:text-white font-medium">{selectedExam.courseName}</p>
+            </div>
+            <div className="bg-secondary/50 dark:bg-slate-800/50 p-4 rounded-xl">
+              <p className="text-sm text-muted-foreground dark:text-slate-400">Thời gian làm bài</p>
+              <p className="text-foreground dark:text-white font-medium">{selectedExam.timeLimit} phút</p>
+            </div>
+            <div className="bg-secondary/50 dark:bg-slate-800/50 p-4 rounded-xl">
+              <p className="text-sm text-muted-foreground dark:text-slate-400">Số câu hỏi</p>
+              <p className="text-foreground dark:text-white font-medium">{selectedExam.questionsCount} câu</p>
+            </div>
+            <div className="bg-secondary/50 dark:bg-slate-800/50 p-4 rounded-xl">
+              <p className="text-sm text-muted-foreground dark:text-slate-400">Điểm đạt</p>
+              <p className="text-foreground dark:text-white font-medium">{selectedExam.passingScore}%</p>
+            </div>
+            <div className="bg-secondary/50 dark:bg-slate-800/50 p-4 rounded-xl">
+              <p className="text-sm text-muted-foreground dark:text-slate-400">Số lần thi tối đa</p>
+              <p className="text-foreground dark:text-white font-medium">{selectedExam.maxAttempts} lần</p>
+            </div>
+            <div className="bg-secondary/50 dark:bg-slate-800/50 p-4 rounded-xl">
+              <p className="text-sm text-muted-foreground dark:text-slate-400">Lượt thi</p>
+              <p className="text-foreground dark:text-white font-medium">{selectedExam.attemptCount}</p>
             </div>
           </div>
-        )}
+          {selectedExam.type === "official" && (selectedExam.certificateTemplateName || getTemplateName(selectedExam.certificateTemplateId)) && (
+            <div className="bg-purple-500/10 border border-purple-500/20 p-4 rounded-xl">
+              <div className="flex items-center gap-2 text-purple-500">
+                <Award size={20} />
+                <span className="font-medium">
+                  Chứng chỉ: {selectedExam.certificateTemplateName || getTemplateName(selectedExam.certificateTemplateId)}
+                </span>
+              </div>
+              <p className="text-sm text-purple-400 mt-1">
+                Học viên đạt điểm sẽ được cấp chứng chỉ này
+              </p>
+            </div>
+          )}
+          {selectedExam.status === "rejected" && selectedExam.rejectionReason && (
+            <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl">
+              <div className="flex items-center gap-2 text-red-500 mb-2">
+                <AlertCircle size={20} />
+                <span className="font-medium">Lý do từ chối</span>
+              </div>
+              <p className="text-red-400">{selectedExam.rejectionReason}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )}
         </div>
 
         {/* Delete Confirm Modal */}

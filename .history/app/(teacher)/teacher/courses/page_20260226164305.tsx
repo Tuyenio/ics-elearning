@@ -40,13 +40,7 @@ interface BackendCourse {
   } | null
   lessons?: Array<{ id: string }>
 }
-const InfoItem = ({ icon, label, value }: any) => (
-  <div className="bg-secondary rounded-xl p-3 text-center">
-    <div className="flex justify-center mb-1">{icon}</div>
-    <div className="text-lg font-bold">{value}</div>
-    <div className="text-xs text-muted-foreground">{label}</div>
-  </div>
-)
+
 export default function TeacherCoursesPage() {
   const router = useRouter()
   const [courses, setCourses] = useState<Course[]>([])
@@ -75,6 +69,7 @@ export default function TeacherCoursesPage() {
       pending: "pending",
       rejected: "rejected",
     }
+
     const durationHours = course.duration ? Math.round(course.duration / 60) : 0
     return {
       id: course.id,
@@ -415,107 +410,7 @@ useEffect(() => {
                     <span className="text-xs text-muted-foreground dark:text-slate-400">Trạng thái:</span>
                     {getStatusBadge(course.status)}
                   </div>
-                  {/* INLINE DETAIL – NEO THEO CARD */}
-{viewMode === "view" && selectedCourse?.id === course.id && (
-  <div className="mt-4 rounded-xl border border-border bg-secondary p-4 animate-slideDown">
 
-    {/* Header */}
-    <div className="flex items-start gap-3 mb-3">
-      <img
-        src={course.thumbnail}
-        className="w-20 h-14 rounded-lg object-cover"
-      />
-
-      <div className="flex-1">
-        <h3 className="font-semibold text-sm">
-          {course.title}
-        </h3>
-        <p className="text-xs text-muted-foreground">
-          {course.description}
-        </p>
-        <div className="mt-1">
-          {getStatusBadge(course.status)}
-        </div>
-      </div>
-
-      <button
-        onClick={() => {
-          setViewMode(null)
-          setSelectedCourse(null)
-        }}
-        className="text-muted-foreground"
-      >
-        <XCircle size={18} />
-      </button>
-    </div>
-
-    {/* Stats */}
-    <div className="grid grid-cols-2 gap-2 mb-3">
-      <InfoItem icon={<Users size={14} />} label="Học viên" value={course.students} />
-      <InfoItem icon={<BookOpen size={14} />} label="Bài học" value={course.lessons} />
-      <InfoItem icon={<Clock size={14} />} label="Thời lượng" value={course.duration} />
-      <InfoItem
-        icon={<DollarSign size={14} />}
-        label="Giá"
-        value={`₫${formatPrice(course.price)}`}
-      />
-    </div>
-
-    {/* Actions */}
-    <div className="flex gap-2">
-      <button
-        onClick={() => handleEdit(course.id)}
-        className="flex-1 py-2 rounded-lg bg-background border text-sm"
-      >
-        Chỉnh sửa
-      </button>
-
-      {(course.status === "draft" || course.status === "rejected") && (
-        <button
-          onClick={() => handleSubmitForReview(course.id)}
-          className="flex-1 py-2 rounded-lg bg-primary text-white text-sm"
-        >
-          {course.status === "rejected"
-            ? "Gửi duyệt lại"
-            : "Gửi duyệt"}
-        </button>
-      )}
-    </div>
-  </div>
-)}
-                  {viewMode === "delete" && selectedCourse && selectedCourse.id === course.id && (
-                    <div className="fixed inset-0 z-[9999] bg-black/30 backdrop-blur-sm" style={{pointerEvents: 'auto'}}>
-                      <div
-                        className="absolute max-w-xs w-full bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl p-6 animate-fadeIn"
-                        style={menuRect ? {
-                          left: `calc(${menuRect.left + menuRect.width / 2}px - 160px)`,
-                          top: `calc(${menuRect.top + menuRect.height / 2}px - 180px)`,
-                        } : {left: '50%', top: '50%', transform: 'translate(-50%, -50%)'}}
-                      >
-                        <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Trash2 size={32} className="text-red-600 dark:text-red-400" />
-                        </div>
-                        <h2 className="text-xl font-bold text-foreground dark:text-white mb-2 text-center">Xóa khóa học?</h2>
-                        <p className="text-muted-foreground dark:text-slate-400 mb-6 text-center">
-                          Bạn có chắc chắn muốn xóa khóa học "<strong>{selectedCourse.title}</strong>"? Hành động này không thể hoàn tác.
-                        </p>
-                        <div className="flex gap-3">
-                          <button
-                            onClick={() => { setViewMode(null); setSelectedCourse(null); }}
-                            className="flex-1 py-3 rounded-lg font-medium border border-border dark:border-slate-800 text-foreground dark:text-white hover:bg-secondary dark:hover:bg-slate-800"
-                          >
-                            Hủy
-                          </button>
-                          <button
-                            onClick={handleDeleteConfirm}
-                            className="flex-1 py-3 rounded-lg font-medium bg-red-600 hover:bg-red-700 text-white"
-                          >
-                            Xóa khóa học
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
@@ -762,8 +657,7 @@ useEffect(() => {
 
       {/* Delete Confirmation Modal */}
       {viewMode === "delete" && selectedCourse && (
-        <div className="hidden md:flex fixed inset-0 bg-black/60 z-[9999] items-center justify-center p-4">
-        <div className="md:flex inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
           <div className="bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full">
             <div className="p-6 text-center">
               <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -789,7 +683,6 @@ useEffect(() => {
               </div>
             </div>
           </div>
-        </div>
         </div>
       )}    
 {menuCourse && menuRect && typeof window !== "undefined" &&
@@ -856,6 +749,6 @@ useEffect(() => {
       card
     )
   })()}
-    </div>     
+    </div>
   )
 }

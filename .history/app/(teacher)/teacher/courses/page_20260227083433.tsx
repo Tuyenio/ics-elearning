@@ -415,74 +415,6 @@ useEffect(() => {
                     <span className="text-xs text-muted-foreground dark:text-slate-400">Trạng thái:</span>
                     {getStatusBadge(course.status)}
                   </div>
-                  {/* INLINE DETAIL – NEO THEO CARD */}
-{viewMode === "view" && selectedCourse?.id === course.id && (
-  <div className="mt-4 rounded-xl border border-border bg-secondary p-4 animate-slideDown">
-
-    {/* Header */}
-    <div className="flex items-start gap-3 mb-3">
-      <img
-        src={course.thumbnail}
-        className="w-20 h-14 rounded-lg object-cover"
-      />
-
-      <div className="flex-1">
-        <h3 className="font-semibold text-sm">
-          {course.title}
-        </h3>
-        <p className="text-xs text-muted-foreground">
-          {course.description}
-        </p>
-        <div className="mt-1">
-          {getStatusBadge(course.status)}
-        </div>
-      </div>
-
-      <button
-        onClick={() => {
-          setViewMode(null)
-          setSelectedCourse(null)
-        }}
-        className="text-muted-foreground"
-      >
-        <XCircle size={18} />
-      </button>
-    </div>
-
-    {/* Stats */}
-    <div className="grid grid-cols-2 gap-2 mb-3">
-      <InfoItem icon={<Users size={14} />} label="Học viên" value={course.students} />
-      <InfoItem icon={<BookOpen size={14} />} label="Bài học" value={course.lessons} />
-      <InfoItem icon={<Clock size={14} />} label="Thời lượng" value={course.duration} />
-      <InfoItem
-        icon={<DollarSign size={14} />}
-        label="Giá"
-        value={`₫${formatPrice(course.price)}`}
-      />
-    </div>
-
-    {/* Actions */}
-    <div className="flex gap-2">
-      <button
-        onClick={() => handleEdit(course.id)}
-        className="flex-1 py-2 rounded-lg bg-background border text-sm"
-      >
-        Chỉnh sửa
-      </button>
-
-      {(course.status === "draft" || course.status === "rejected") && (
-        <button
-          onClick={() => handleSubmitForReview(course.id)}
-          className="flex-1 py-2 rounded-lg bg-primary text-white text-sm"
-        >
-          {course.status === "rejected"
-            ? "Gửi duyệt lại"
-            : "Gửi duyệt"}
-        </button>
-      )}
-    </div>
-  </div>
-)}
                   {viewMode === "delete" && selectedCourse && selectedCourse.id === course.id && (
                     <div className="fixed inset-0 z-[9999] bg-black/30 backdrop-blur-sm" style={{pointerEvents: 'auto'}}>
                       <div
@@ -855,7 +787,84 @@ useEffect(() => {
       </>,
       card
     )
+    
   })()}
-    </div>     
+  
+  {/* MOBILE – View Course Detail Modal */}
+{viewMode === "view" && selectedCourse && (
+  <div className="md:hidden fixed inset-0 z-[100000] bg-black/50 flex items-end">
+    {/* Bottom Sheet */}
+    <div className="w-full bg-card dark:bg-slate-900 rounded-t-3xl max-h-[90vh] overflow-y-auto animate-slideUp">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-border">
+        <h2 className="text-lg font-bold">Chi tiết khóa học</h2>
+        <button
+          onClick={() => { setViewMode(null); setSelectedCourse(null) }}
+          className="p-2 rounded-lg hover:bg-secondary"
+        >
+          <XCircle size={22} />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="p-4 space-y-4">
+        <div className="flex gap-3">
+          <img
+            src={selectedCourse.thumbnail}
+            className="w-24 h-16 rounded-lg object-cover"
+          />
+          <div>
+            <h3 className="font-semibold">{selectedCourse.title}</h3>
+            <p className="text-sm text-muted-foreground">
+              {selectedCourse.description}
+            </p>
+            <div className="mt-2">
+              {getStatusBadge(selectedCourse.status)}
+            </div>
+          </div>
+        </div>
+
+        {selectedCourse.status === "rejected" && selectedCourse.rejectionReason && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-600">
+            <strong>Lý do từ chối:</strong><br />
+            {selectedCourse.rejectionReason}
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-3">
+          <InfoItem icon={<Users size={18} />} label="Học viên" value={selectedCourse.students} />
+          <InfoItem icon={<BookOpen size={18} />} label="Bài học" value={selectedCourse.lessons} />
+          <InfoItem icon={<Clock size={18} />} label="Thời lượng" value={selectedCourse.duration} />
+          <InfoItem icon={<DollarSign size={18} />} label="Giá" value={`₫${formatPrice(selectedCourse.price)}`} />
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-3 pt-4 border-t">
+          <button
+            onClick={() => handleEdit(selectedCourse.id)}
+            className="flex-1 py-3 rounded-xl bg-secondary font-medium"
+          >
+            Chỉnh sửa
+          </button>
+
+          {(selectedCourse.status === "draft" || selectedCourse.status === "rejected") && (
+            <button
+              onClick={() => {
+                handleSubmitForReview(selectedCourse.id)
+                setViewMode(null)
+                setSelectedCourse(null)
+              }}
+              className="flex-1 py-3 rounded-xl bg-primary text-white font-medium"
+            >
+              {selectedCourse.status === "rejected" ? "Gửi duyệt lại" : "Gửi duyệt"}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+    </div>
   )
 }

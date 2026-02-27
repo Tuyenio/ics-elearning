@@ -23,7 +23,6 @@ import {
   BookOpen,
   Users
 } from "lucide-react"
-import React from "react"
 
 interface Exam {
   id: string
@@ -65,7 +64,6 @@ export default function TeacherExamsPage() {
   const [selectedExam, setSelectedExam] = useState<Exam | null>(null)
   const [viewMode, setViewMode] = useState<"view" | "delete" | null>(null)
   const [modalPos, setModalPos] = useState<{ top: number; left: number } | null>(null)
-  const detailBtnRefs = React.useRef<{ [key: string]: HTMLButtonElement | null }>({})
 
   useEffect(() => {
     fetchExams()
@@ -523,59 +521,53 @@ export default function TeacherExamsPage() {
               {/* INLINE DETAIL – MOBILE – NEO THEO CARD */}
               <div className="md:hidden">
 {viewMode === "view" && selectedExam?.id === exam.id && (
-  <div className="mt-4 rounded-xl border border-border bg-secondary/50 p-4 animate-slideDown">
-
-    {/* Header */}
-    <div className="flex items-start justify-between gap-3 mb-3">
-      <div>
-        <h4 className="font-semibold text-sm">{exam.title}</h4>
-        <p className="text-xs text-muted-foreground">{exam.description}</p>
+  <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}>
+    <div className="w-full max-w-md bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl p-6 shadow-xl" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <h4 className="font-semibold text-sm">{exam.title}</h4>
+          <p className="text-xs text-muted-foreground">{exam.description}</p>
+        </div>
+        <button
+          onClick={() => {
+            setViewMode(null)
+            setSelectedExam(null)
+          }}
+          className="text-muted-foreground"
+        >
+          <X size={18} />
+        </button>
       </div>
-
-      <button
-        onClick={() => {
-          setViewMode(null)
-          setSelectedExam(null)
-        }}
-        className="text-muted-foreground"
-      >
-        <X size={18} />
-      </button>
-    </div>
-
-    {/* Info grid */}
-    <div className="grid grid-cols-2 gap-2 text-sm mb-3">
-      <div className="bg-background rounded-lg p-2">
-        <p className="text-xs text-muted-foreground">Khóa học</p>
-        <p className="font-medium">{exam.courseName}</p>
-      </div>
-
-      <div className="bg-background rounded-lg p-2">
-        <p className="text-xs text-muted-foreground">Thời gian</p>
-        <p className="font-medium">{exam.timeLimit} phút</p>
-      </div>
-
-      <div className="bg-background rounded-lg p-2">
-        <p className="text-xs text-muted-foreground">Câu hỏi</p>
-        <p className="font-medium">{exam.questionsCount} câu</p>
-      </div>
-
-      <div className="bg-background rounded-lg p-2">
-        <p className="text-xs text-muted-foreground">Điểm đạt</p>
-        <p className="font-medium">{exam.passingScore}%</p>
-      </div>
-
-      <div className="bg-background rounded-lg p-2">
-        <p className="text-xs text-muted-foreground">Số lần thi</p>
-        <p className="font-medium">{exam.maxAttempts} lần</p>
-      </div>
-
-      <div className="bg-background rounded-lg p-2">
-        <p className="text-xs text-muted-foreground">Lượt thi</p>
-        <p className="font-medium">{exam.attemptCount}</p>
+      {/* Info grid */}
+      <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+        <div className="bg-background rounded-lg p-2">
+          <p className="text-xs text-muted-foreground">Khóa học</p>
+          <p className="font-medium">{exam.courseName}</p>
+        </div>
+        <div className="bg-background rounded-lg p-2">
+          <p className="text-xs text-muted-foreground">Thời gian</p>
+          <p className="font-medium">{exam.timeLimit} phút</p>
+        </div>
+        <div className="bg-background rounded-lg p-2">
+          <p className="text-xs text-muted-foreground">Câu hỏi</p>
+          <p className="font-medium">{exam.questionsCount} câu</p>
+        </div>
+        <div className="bg-background rounded-lg p-2">
+          <p className="text-xs text-muted-foreground">Điểm đạt</p>
+          <p className="font-medium">{exam.passingScore}%</p>
+        </div>
+        <div className="bg-background rounded-lg p-2">
+          <p className="text-xs text-muted-foreground">Số lần thi</p>
+          <p className="font-medium">{exam.maxAttempts} lần</p>
+        </div>
+        <div className="bg-background rounded-lg p-2">
+          <p className="text-xs text-muted-foreground">Lượt thi</p>
+          <p className="font-medium">{exam.attemptCount}</p>
+        </div>
       </div>
     </div>
-    </div>
+  </div>
 )}
   </div>
             </div>
@@ -602,26 +594,17 @@ export default function TeacherExamsPage() {
         {/* View Modal */}
         <div className="hidden md:flex">
   {selectedExam && viewMode === "view" && (
-    <div className="fixed inset-0 bg-black/50 z-90 flex items-center justify-center">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
       <div className="bg-card border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl animate-scaleIn">
         
         {/* Header */}
         <div className="p-6 border-b border-border flex items-center justify-between">
           <h2 className="text-xl font-bold">Chi tiết bài thi</h2>
           <button
-          ref={el => { detailBtnRefs.current[selectedExam.id] = el }}
             onClick={() => {
-              const btn = detailBtnRefs.current[ selectedExam.id];
-    if (btn) {
-      const rect = btn.getBoundingClientRect();
-      setModalPos({
-        top: rect.bottom + 8,
-        left: rect.left,
-      });
-    }
-    setSelectedExam(selectedExam);
-    setViewMode("view");
-  }}
+              setViewMode(null)
+              setSelectedExam(null)
+            }}
             className="p-2 hover:bg-secondary rounded-lg"
           >
             <X size={20} />

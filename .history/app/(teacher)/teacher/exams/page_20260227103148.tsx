@@ -611,7 +611,7 @@ export default function TeacherExamsPage() {
           <button
           ref={el => { detailBtnRefs.current[selectedExam.id] = el }}
             onClick={() => {
-              const btn = detailBtnRefs.current[ selectedExam.id];
+              const btn = detailBtnRefs[exam.id];
     if (btn) {
       const rect = btn.getBoundingClientRect();
       setModalPos({
@@ -619,7 +619,7 @@ export default function TeacherExamsPage() {
         left: rect.left,
       });
     }
-    setSelectedExam(selectedExam);
+    setSelectedExam(exam);
     setViewMode("view");
   }}
             className="p-2 hover:bg-secondary rounded-lg"

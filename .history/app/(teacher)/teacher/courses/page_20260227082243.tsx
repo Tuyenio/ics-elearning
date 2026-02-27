@@ -40,13 +40,7 @@ interface BackendCourse {
   } | null
   lessons?: Array<{ id: string }>
 }
-const InfoItem = ({ icon, label, value }: any) => (
-  <div className="bg-secondary rounded-xl p-3 text-center">
-    <div className="flex justify-center mb-1">{icon}</div>
-    <div className="text-lg font-bold">{value}</div>
-    <div className="text-xs text-muted-foreground">{label}</div>
-  </div>
-)
+
 export default function TeacherCoursesPage() {
   const router = useRouter()
   const [courses, setCourses] = useState<Course[]>([])
@@ -75,6 +69,7 @@ export default function TeacherCoursesPage() {
       pending: "pending",
       rejected: "rejected",
     }
+
     const durationHours = course.duration ? Math.round(course.duration / 60) : 0
     return {
       id: course.id,
@@ -360,7 +355,7 @@ useEffect(() => {
                 <div
                   key={course.id}
                   data-course-card-id={course.id}
-                  className={`relative border border-border dark:border-slate-800 rounded-xl p-4 bg-white dark:bg-slate-900 shadow-sm flex flex-col gap-2 animate-fadeIn ${menuCourse?.id === course.id ? "z-[9999]" : "z-0"}`}
+                  className={`relative border border-border dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-sm flex flex-col gap-2 animate-fadeIn transition-all duration-300 ${menuCourse?.id === course.id ? "z-[9999]" : "z-0"} ${viewMode === 'view' && selectedCourse && selectedCourse.id === course.id ? 'p-0 overflow-visible min-h-[420px] max-h-none' : 'p-4'}`}
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <img
@@ -415,74 +410,85 @@ useEffect(() => {
                     <span className="text-xs text-muted-foreground dark:text-slate-400">Trạng thái:</span>
                     {getStatusBadge(course.status)}
                   </div>
-                  {/* INLINE DETAIL – NEO THEO CARD */}
-{viewMode === "view" && selectedCourse?.id === course.id && (
-  <div className="mt-4 rounded-xl border border-border bg-secondary p-4 animate-slideDown">
-
-    {/* Header */}
-    <div className="flex items-start gap-3 mb-3">
-      <img
-        src={course.thumbnail}
-        className="w-20 h-14 rounded-lg object-cover"
-      />
-
-      <div className="flex-1">
-        <h3 className="font-semibold text-sm">
-          {course.title}
-        </h3>
-        <p className="text-xs text-muted-foreground">
-          {course.description}
-        </p>
-        <div className="mt-1">
-          {getStatusBadge(course.status)}
-        </div>
-      </div>
-
-      <button
-        onClick={() => {
-          setViewMode(null)
-          setSelectedCourse(null)
-        }}
-        className="text-muted-foreground"
-      >
-        <XCircle size={18} />
-      </button>
-    </div>
-
-    {/* Stats */}
-    <div className="grid grid-cols-2 gap-2 mb-3">
-      <InfoItem icon={<Users size={14} />} label="Học viên" value={course.students} />
-      <InfoItem icon={<BookOpen size={14} />} label="Bài học" value={course.lessons} />
-      <InfoItem icon={<Clock size={14} />} label="Thời lượng" value={course.duration} />
-      <InfoItem
-        icon={<DollarSign size={14} />}
-        label="Giá"
-        value={`₫${formatPrice(course.price)}`}
-      />
-    </div>
-
-    {/* Actions */}
-    <div className="flex gap-2">
-      <button
-        onClick={() => handleEdit(course.id)}
-        className="flex-1 py-2 rounded-lg bg-background border text-sm"
-      >
-        Chỉnh sửa
-      </button>
-
-      {(course.status === "draft" || course.status === "rejected") && (
-        <button
-          onClick={() => handleSubmitForReview(course.id)}
-          className="flex-1 py-2 rounded-lg bg-primary text-white text-sm"
-        >
-          {course.status === "rejected"
-            ? "Gửi duyệt lại"
-            : "Gửi duyệt"}
-        </button>
-      )}
-    </div>
-  </div>
-)}
+                  
+                  {/* Modals - Mobile: anchor to card */}
+                  {viewMode === "view" && selectedCourse && selectedCourse.id === course.id && (
+                    <div className="w-full h-full bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-xl shadow-2xl p-6 animate-fadeIn overflow-y-auto">
+                        <div className="flex items-center justify-between mb-4">
+                          <h2 className="text-xl font-bold text-foreground dark:text-white">Chi tiết khóa học</h2>
+                          <button
+                            onClick={() => { setViewMode(null); setSelectedCourse(null); }}
+                            className="absolute top-3 right-3 p-2 hover:bg-secondary dark:hover:bg-slate-800 rounded-lg transition-smooth"
+                          >
+                            <XCircle size={20} className="text-muted-foreground" />
+                          </button>
+                        </div>
+                        <div className="flex gap-4 mb-4">
+                          <img
+                            src={selectedCourse.thumbnail}
+                            alt={selectedCourse.title}
+                            className="w-24 h-16 rounded-lg object-cover bg-secondary"
+                          />
+                          <div className="flex-1">
+                            <h3 className="text-lg font-bold text-foreground dark:text-white">{selectedCourse.title}</h3>
+                            <p className="text-muted-foreground dark:text-slate-400 text-sm mt-1">{selectedCourse.description}</p>
+                            <div className="mt-2">{getStatusBadge(selectedCourse.status)}</div>
+                          </div>
+                        </div>
+                        {selectedCourse.status === "rejected" && selectedCourse.rejectionReason && (
+                          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mb-4">
+                            <div className="flex items-center gap-2 text-red-700 dark:text-red-400 mb-2">
+                              <AlertCircle size={18} />
+                              <span className="font-semibold">Lý do từ chối từ Admin</span>
+                            </div>
+                            <p className="text-red-600 dark:text-red-300 text-sm">{selectedCourse.rejectionReason}</p>
+                          </div>
+                        )}
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4 text-center">
+                            <Users size={24} className="mx-auto mb-2 text-blue-600 dark:text-blue-400" />
+                            <p className="text-xl font-bold text-foreground dark:text-white">{selectedCourse.students}</p>
+                            <p className="text-sm text-muted-foreground dark:text-slate-400">Học viên</p>
+                          </div>
+                          <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4 text-center">
+                            <BookOpen size={24} className="mx-auto mb-2 text-green-600 dark:text-green-400" />
+                            <p className="text-xl font-bold text-foreground dark:text-white">{selectedCourse.lessons}</p>
+                            <p className="text-sm text-muted-foreground dark:text-slate-400">Bài học</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
+                            <p className="text-muted-foreground dark:text-slate-400 text-sm mb-1">Danh mục</p>
+                            <p className="text-foreground dark:text-white font-medium">{selectedCourse.category}</p>
+                          </div>
+                          <div className="bg-secondary dark:bg-slate-800/50 rounded-xl p-4">
+                            <p className="text-muted-foreground dark:text-slate-400 text-sm mb-1">Ngày tạo</p>
+                            <p className="text-foreground dark:text-white font-medium">{formatDate(selectedCourse.createdAt)}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-3 pt-4 border-t border-border dark:border-slate-800">
+                          <button
+                            onClick={() => handleEdit(selectedCourse.id)}
+                            className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-secondary dark:bg-slate-800 text-foreground dark:text-white hover:bg-secondary/80"
+                          >
+                            <Edit2 size={18} /> Chỉnh sửa
+                          </button>
+                          {(selectedCourse.status === "draft" || selectedCourse.status === "rejected") && (
+                            <button
+                              onClick={() => {
+                                handleSubmitForReview(selectedCourse.id)
+                                setViewMode(null)
+                                setSelectedCourse(null)
+                              }}
+                              className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-accent text-white hover:shadow-lg"
+                            >
+                              <Send size={18} /> {selectedCourse.status === "rejected" ? "Gửi duyệt lại" : "Gửi duyệt"}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {viewMode === "delete" && selectedCourse && selectedCourse.id === course.id && (
                     <div className="fixed inset-0 z-[9999] bg-black/30 backdrop-blur-sm" style={{pointerEvents: 'auto'}}>
                       <div
@@ -856,6 +862,6 @@ useEffect(() => {
       card
     )
   })()}
-    </div>     
+    </div>
   )
 }
