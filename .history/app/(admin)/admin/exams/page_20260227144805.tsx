@@ -554,133 +554,16 @@ export default function AdminExamsPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredExams.map(exam => (
-              <div
-                key={exam.id}
-                data-exam-card
-                ref={openMenu === exam.id || (selectedExam && viewMode === "view" && selectedExam.id === exam.id) ? cardRef : null}
-                className="bg-slate-800/80 rounded-xl p-4 space-y-3"
-              >
-                {/* Header */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1">
-                    <p className="font-semibold text-white leading-snug line-clamp-2">{exam.title}</p>
-                    <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
-                      <BookOpen size={12} /> {exam.course}
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-1 items-end shrink-0">
-                    {getTypeBadge(exam.type)}
-                    {getStatusBadge(exam.status)}
-                  </div>
+                <div
+                  key={exam.id}
+                  data-exam-card
+                  ref={openMenu === exam.id || (selectedExam && viewMode === "view" && selectedExam.id === exam.id) ? cardRef : null}
+                  className="bg-slate-800/80 rounded-xl p-4 space-y-3"
+                >
+                  {/* ...existing card content... */}
                 </div>
-
-                {/* Meta nhanh */}
-                <div className="text-sm text-slate-300 flex items-center gap-2">
-                  <span className="font-medium">{exam.teacher}</span>
-                  <span className="text-slate-500 text-xs truncate">{exam.teacherEmail}</span>
-                </div>
-
-                {/* Cấu hình thi */}
-                <div className="grid grid-cols-2 gap-3 text-sm pt-2">
-                  <div className="flex items-center gap-2">
-                    <Timer size={14} className="text-blue-400" />
-                    <span>{exam.timeLimit} phút</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <ClipboardList size={14} className="text-green-400" />
-                    <span>{exam.questionsCount} câu</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle size={14} className="text-yellow-400" />
-                    <span>{exam.passingScore}% đạt</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Award size={14} className="text-purple-400" />
-                    <span>{exam.maxAttempts} lần thi</span>
-                  </div>
-                </div>
-
-                {/* Footer action */}
-                <div className="flex items-center justify-between pt-3 border-t border-slate-700/50">
-                  <span className="text-sm text-slate-400">{exam.attemptCount} lượt thi</span>
-                  <div className="flex gap-2">
-                    <button
-                      className="px-3 py-1.5 rounded-lg bg-primary/20 text-primary text-sm"
-                      onClick={e => {
-                        const rect = (e.currentTarget.closest('[data-exam-card]') as HTMLElement)?.getBoundingClientRect();
-                        if (rect) setAnchorRect(rect);
-                        setSelectedExam(exam);
-                        setViewMode("view");
-                      }}
-                    >
-                      Xem trước
-                    </button>
-                    <button
-                      className="p-2 rounded-lg bg-slate-700"
-                      onClick={() => setOpenMenu(openMenu === exam.id ? null : exam.id)}
-                    >
-                      <MoreVertical size={16} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Action menu for mobile */}
-                {openMenu === exam.id && (
-                  <>
-                    {/* Overlay for mobile UX */}
-                    {openMenu && (
-                      <div
-                        className="fixed inset-0 z-[9998] bg-black/10"
-                        onClick={() => setOpenMenu(null)}
-                      />
-                    )}
-                    <div
-                      ref={menuRef}
-                      className="relative right-0 bottom-0 z-20 w-52 bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-xl shadow-lg"
-                    >
-                      {exam.status === "pending" && (
-                        <>
-                          <button
-                            onClick={() => {
-                              handleApprove(exam.id)
-                              setOpenMenu(null)
-                            }}
-                            className="w-full px-4 py-3 text-left hover:bg-secondary dark:hover:bg-slate-700 flex items-center gap-2 text-green-500 rounded-t-xl"
-                          >
-                            <CheckCircle size={16} />
-                            <span className="font-medium">Duyệt bài thi</span>
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedExam(exam)
-                              setViewMode("reject")
-                              setOpenMenu(null)
-                            }}
-                            className="w-full px-4 py-3 text-left hover:bg-secondary dark:hover:bg-slate-700 flex items-center gap-2 text-yellow-500 border-t border-border dark:border-slate-700"
-                          >
-                            <XCircle size={16} />
-                            <span className="font-medium">Từ chối</span>
-                          </button>
-                        </>
-                      )}
-                      <button
-                        onClick={() => {
-                          setConfirmDialog({ isOpen: true, action: "delete", examId: exam.id })
-                          setOpenMenu(null)
-                        }}
-                        className={`w-full px-4 py-3 text-left hover:bg-secondary dark:hover:bg-slate-700 flex items-center gap-2 text-red-500 ${exam.status === "pending" ? "border-t border-border dark:border-slate-700" : "rounded-xl"}`}
-                      >
-                        <XCircle size={16} />
-                        <span className="font-medium">Xóa bài thi</span>
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-
-            ))
-          }
-          </div>
+              ))}
+            </div>
           )}
         </div>
 

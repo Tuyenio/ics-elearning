@@ -172,98 +172,72 @@ export default function AdminExamsPage() {
   }, [])
 
   const filteredExams = exams.filter(
-    (exam) =>
-      (exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        exam.teacher.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        exam.course.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (statusFilter === "all" || exam.status === statusFilter) &&
-      (typeFilter === "all" || exam.type === typeFilter)
-  )
-
-  // Stats
-  const totalExams = exams.length
-  const pendingExams = exams.filter(e => e.status === "pending").length
-  const approvedExams = exams.filter(e => e.status === "approved").length
-  const rejectedExams = exams.filter(e => e.status === "rejected").length
-  const practiceExams = exams.filter(e => e.type === "practice").length
-  const officialExams = exams.filter(e => e.type === "official").length
-
-  const handleApprove = (examId: string) => {
-    setExams(exams.map(exam =>
-      exam.id === examId ? { ...exam, status: "approved" as const, rejectionReason: undefined } : exam
-    ))
-    setOpenMenu(null)
-  }
-
-  const handleReject = () => {
-    if (!selectedExam || !rejectionReason.trim()) return
-    setExams(exams.map(exam =>
-      exam.id === selectedExam.id
-        ? { ...exam, status: "rejected" as const, rejectionReason }
-        : exam
-    ))
-    setViewMode(null)
-    setSelectedExam(null)
-    setRejectionReason("")
-  }
-
-  const handleDelete = (examId: string) => {
-    setExams(exams.filter(exam => exam.id !== examId))
-    setConfirmDialog({ isOpen: false, action: "" })
-  }
-
-  const getStatusBadge = (status: string) => {
-    const styles = {
-      pending: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-      approved: "bg-green-500/10 text-green-500 border-green-500/20",
-      rejected: "bg-red-500/10 text-red-500 border-red-500/20",
-      draft: "bg-gray-500/10 text-gray-500 border-gray-500/20",
-    }
-    const labels = {
-      pending: "Chờ duyệt",
-      approved: "Đã duyệt",
-      rejected: "Từ chối",
-      draft: "Nháp",
-    }
-    const icons = {
-      pending: Clock,
-      approved: CheckCircle,
-      rejected: XCircle,
-      draft: FileText,
-    }
-    const Icon = icons[status as keyof typeof icons]
-    return (
-      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${styles[status as keyof typeof styles]}`}>
-        <Icon size={12} />
-        {labels[status as keyof typeof labels]}
-      </span>
-    )
-  }
-
-  const getTypeBadge = (type: string) => {
-    const styles = {
-      practice: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-      official: "bg-purple-500/10 text-purple-500 border-purple-500/20",
-    }
-    const labels = {
-      practice: "Thi thử",
-      official: "Thi thật",
-    }
-    return (
-      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${styles[type as keyof typeof styles]}`}>
-        {type === "official" ? <Award size={12} /> : <ClipboardList size={12} />}
-        {labels[type as keyof typeof labels]}
-      </span>
-    )
-  }
-  return (
-    <div className="min-h-screen w-full">
-      {/* Sidebar: hidden on md, only show on lg */}
-      <div className="hidden lg:block lg:w-[260px] lg:fixed lg:inset-y-0 lg:left-0 lg:bg-slate-900 lg:border-r lg:border-border dark:lg:border-slate-800">
-        {/* ...existing sidebar content... */}
-      </div>
-      {/* Main content: margin-left for sidebar on lg */}
-      <div className="w-full lg:ml-[260px] space-y-8">
+          {/* View/Reject Modal */}
+          {selectedExam && viewMode && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-2 md:p-4">
+              <div className="w-full max-w-md md:max-w-2xl lg:max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] overflow-y-auto rounded-none sm:rounded-2xl bg-card dark:bg-slate-900 border border-border dark:border-slate-800 shadow-2xl">
+                <div className="sticky top-0 z-10 px-2 py-2 sm:px-4 sm:py-3 md:p-6 flex items-center justify-between border-b border-border dark:border-slate-800">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                      <FileText className="text-white" size={20} />
+                    </div>
+                    <span className="text-lg md:text-xl font-bold text-foreground dark:text-white">{viewMode === "reject" ? "Từ chối bài thi" : "Xem trước bài thi"}</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setViewMode(null)
+                      setSelectedExam(null)
+                      setRejectionReason("")
+                    }}
+                    className="p-2 rounded-full hover:bg-secondary dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className="p-2 sm:p-4 md:p-6 space-y-6">
+                  {viewMode === "view" && (
+                    <>
+                      {/* Exam Header */}
+                      <div className="bg-gradient-to-br from-primary/5 to-accent/5 dark:from-primary/10 dark:to-accent/10 p-2 sm:p-4 md:p-6 rounded-xl border border-border dark:border-slate-800">
+                        <div className="space-y-3">
+                          <h3 className="text-lg md:text-xl sm:text-2xl font-bold leading-snug break-words line-clamp-2 text-foreground dark:text-white">
+                            {/* ...existing code... */}
+                          </h3>
+                          <div className="flex flex-wrap gap-2">
+                            {/* ...existing code... */}
+                          </div>
+                          <p className="text-muted-foreground dark:text-slate-400 leading-relaxed">{/* ...existing code... */}</p>
+                        </div>
+                        {/* Course & Teacher Info */}
+                        <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 pt-4 border-t border-border dark:border-slate-700">
+                          <div className="flex items-center gap-2 text-sm">
+                            <BookOpen size={16} className="text-primary dark:text-accent" />
+                            {/* ...existing code... */}
+                          </div>
+                          <div className="w-px h-4 bg-border dark:bg-slate-700 hidden md:block"></div>
+                          <div className="flex items-center gap-2 text-sm">
+                            {/* ...existing code... */}
+                          </div>
+                        </div>
+                      </div>
+                      {/* Exam Configuration */}
+                      <div>
+                        <h4 className="text-md md:text-lg font-semibold text-foreground dark:text-white mb-4 flex items-center gap-2">
+                          <Timer size={20} className="text-primary dark:text-accent" />
+                          Cấu hình bài thi
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+                          {/* ...existing code... */}
+                        </div>
+                      </div>
+                      {/* ...existing code... */}
+                    </>
+                  )}
+                  {/* ...existing code... */}
+                </div>
+              </div>
+            </div>
+          )}
         {/* Header with Stats */}
         <div className="relative overflow-hidden p-8 rounded-3xl animate-fadeIn" style={{ backgroundImage: "url('/image/exam2.png')", backgroundSize: "cover", backgroundPosition: "center" }}>
           {/* Overlay for better readability */}
@@ -278,8 +252,8 @@ export default function AdminExamsPage() {
               </div>
             </div>
 
-            {/* Stats Cards: grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
               <div className="animate-slideUp" style={{ animationDelay: "0.25s" }}>
                 <div className="group flex items-center justify-between p-5 h-full bg-white/80 dark:bg-slate-800/70 backdrop-blur-md rounded-2xl hover:bg-white/95 dark:hover:bg-slate-800/90 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer">
                   <div>
@@ -544,16 +518,15 @@ export default function AdminExamsPage() {
           )}
         </div>
 
-        {/* Exams Card Layout (Tablet & Mobile) */}
-        <div className="block lg:hidden">
+        {/* Exams Card Layout (Mobile/Z Fold) */}
+        <div className="block lg:hidden space-y-4">
           {filteredExams.length === 0 ? (
             <div className="p-12 text-center">
               <FileText size={48} className="mx-auto text-muted-foreground dark:text-slate-600 mb-4" />
               <p className="text-muted-foreground dark:text-slate-400">Không tìm thấy bài thi nào</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredExams.map(exam => (
+            filteredExams.map(exam => (
               <div
                 key={exam.id}
                 data-exam-card
@@ -679,8 +652,6 @@ export default function AdminExamsPage() {
               </div>
 
             ))
-          }
-          </div>
           )}
         </div>
 
