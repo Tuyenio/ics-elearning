@@ -829,6 +829,16 @@ const formatDate = (dateString?: string) => {
           >
             ✏️ Sửa thông tin
           </button>
+          {isEditUserOpen && editUser && window.innerWidth >= 1024 && (
+  <EditUserModal
+    user={editUser}
+    onClose={() => {
+      setIsEditUserOpen(false)
+      setEditUser(null)
+    }}
+    onSubmit={handleUpdateUser}
+  />
+)}
           {/* Khóa / Mở */}
           <button
             onClick={() => {
@@ -1349,16 +1359,6 @@ const formatDate = (dateString?: string) => {
           </div>
         </div>
       )}
-      {isEditUserOpen && editUser && window.innerWidth >= 1024 && (
-  <EditUserModal
-    user={editUser}
-    onClose={() => {
-      setIsEditUserOpen(false)
-      setEditUser(null)
-    }}
-    onSubmit={handleUpdateUser}
-  />
-)}
 
       <AddUserModal
   isOpen={isAddUserOpen}

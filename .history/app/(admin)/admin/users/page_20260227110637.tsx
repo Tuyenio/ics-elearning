@@ -1263,7 +1263,16 @@ const formatDate = (dateString?: string) => {
                 <X size={20} />
               </button>
             </div>
-
+{isEditUserOpen && editUser && window.innerWidth >= 1024 && (
+  <EditUserModal
+    user={editUser}
+    onClose={() => {
+      setIsEditUserOpen(false)
+      setEditUser(null)
+    }}
+    onSubmit={handleUpdateUser}
+  />
+)}
             {/* Form */}
             <form
               onSubmit={(e) => {
@@ -1349,16 +1358,6 @@ const formatDate = (dateString?: string) => {
           </div>
         </div>
       )}
-      {isEditUserOpen && editUser && window.innerWidth >= 1024 && (
-  <EditUserModal
-    user={editUser}
-    onClose={() => {
-      setIsEditUserOpen(false)
-      setEditUser(null)
-    }}
-    onSubmit={handleUpdateUser}
-  />
-)}
 
       <AddUserModal
   isOpen={isAddUserOpen}

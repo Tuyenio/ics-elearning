@@ -818,17 +818,23 @@ const formatDate = (dateString?: string) => {
           </button>
           {/* Sửa thông tin */}
           <button
-            onClick={() => {
-              const user = filteredUsers.find(u => u.id === openMenu)
-              if (user) setEditUser(user)
-              setIsEditUserOpen(true)
-              setOpenMenu(null)
-              setMenuPos(null)
-            }}
-            className="w-full text-left px-4 py-2 hover:bg-secondary dark:hover:bg-slate-800 flex items-center gap-2 text-foreground dark:text-white"
-          >
-            ✏️ Sửa thông tin
-          </button>
+  onClick={() => {
+    const user = filteredUsers.find(u => u.id === openMenu)
+    if (!user) return
+
+    setEditUser(user)
+
+    if (window.innerWidth >= 1024) {
+      setIsEditUserOpen(true) // ✅ CHỈ DESKTOP
+    }
+
+    setOpenMenu(null)
+    setMenuPos(null)
+  }}
+  className="w-full text-left px-4 py-2 hover:bg-secondary flex items-center gap-2"
+>
+  ✏️ Sửa thông tin
+</button>
           {/* Khóa / Mở */}
           <button
             onClick={() => {
@@ -1349,16 +1355,6 @@ const formatDate = (dateString?: string) => {
           </div>
         </div>
       )}
-      {isEditUserOpen && editUser && window.innerWidth >= 1024 && (
-  <EditUserModal
-    user={editUser}
-    onClose={() => {
-      setIsEditUserOpen(false)
-      setEditUser(null)
-    }}
-    onSubmit={handleUpdateUser}
-  />
-)}
 
       <AddUserModal
   isOpen={isAddUserOpen}

@@ -770,24 +770,24 @@ const formatDate = (dateString?: string) => {
                   Xem
                 </button>
                 <button
-                  onClick={() => {
-                    const card = cardRefs.current[user.id]
-                    if (card && window.innerWidth < 1024) {
-                      const rect = card.getBoundingClientRect()
-                      setModalPos({
-                        top: rect.top + window.scrollY,
-                        left: rect.left + window.scrollX,
-                        width: rect.width
-                      })
-                    } else {
-                      setModalPos(null)
-                    }
-                    setEditUser(user)
-                  }}
-                  className="px-4 py-2 rounded-lg bg-secondary text-sm font-medium"
-                >
-                  Sửa
-                </button>
+  onClick={() => {
+    const card = cardRefs.current[user.id]
+    if (card && window.innerWidth < 1024) {
+      const rect = card.getBoundingClientRect()
+      setModalPos({
+        top: rect.top + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      })
+    } else {
+      setModalPos(null)
+    }
+    setEditUser(user)
+  }}
+  className="px-4 py-2 rounded-lg bg-secondary text-sm font-medium"
+>
+  Sửa
+</button>
               </div>
             </div>
           ))}
@@ -1233,123 +1233,7 @@ const formatDate = (dateString?: string) => {
           </div>
         )
       )}
-
-      {/* Modal SỬA USER bám theo card (Mobile) */}
-      {editUser && window.innerWidth < 1024 && modalPos && (
-        <div
-          className="absolute z-[9999] bg-black/60"
-          style={{
-            top: modalPos.top,
-            left: modalPos.left,
-            width: modalPos.width,
-            minWidth: 280,
-            maxWidth: "95vw",
-            borderRadius: 16,
-          }}
-        >
-          <div className="bg-card dark:bg-slate-900 border border-border dark:border-slate-800 rounded-2xl shadow-2xl w-full max-h-[90vh] overflow-y-auto">
-            {/* Header */}
-            <div className="sticky top-0 bg-card dark:bg-slate-900 border-b border-border dark:border-slate-800 p-5 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-foreground dark:text-white">
-                Sửa thông tin người dùng
-              </h2>
-              <button
-                onClick={() => {
-                  setEditUser(null)
-                  setModalPos(null)
-                }}
-                className="p-2 hover:bg-secondary rounded-lg"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Form */}
-            <form
-              onSubmit={(e) => {
-                e.preventDefault()
-                const form = e.currentTarget
-                const formData = new FormData(form)
-
-                handleUpdateUser({
-                  name: formData.get("name"),
-                  phone: formData.get("phone"),
-                  role: formData.get("role"),
-                  status: formData.get("status"),
-                })
-
-                setEditUser(null)
-                setModalPos(null)
-              }}
-              className="p-5 space-y-4 text-sm"
-            >
-              <div>
-                <label className="block mb-1 font-medium">Họ tên</label>
-                <input
-                  name="name"
-                  defaultValue={editUser.name}
-                  className="w-full rounded-lg border px-3 py-2 bg-background"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-1 font-medium">Số điện thoại</label>
-                <input
-                  name="phone"
-                  defaultValue={editUser.phone || ""}
-                  className="w-full rounded-lg border px-3 py-2 bg-background"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-1 font-medium">Vai trò</label>
-                <select
-                  name="role"
-                  defaultValue={editUser.role}
-                  className="w-full rounded-lg border px-3 py-2 bg-background"
-                >
-                  <option value="student">Học viên</option>
-                  <option value="teacher">Giảng viên</option>
-                  <option value="admin">Quản trị viên</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block mb-1 font-medium">Trạng thái</label>
-                <select
-                  name="status"
-                  defaultValue={editUser.status}
-                  className="w-full rounded-lg border px-3 py-2 bg-background"
-                >
-                  <option value="active">Hoạt động</option>
-                  <option value="inactive">Vô hiệu hóa</option>
-                  <option value="pending">Chờ xác thực</option>
-                </select>
-              </div>
-
-              <div className="flex gap-3 pt-3">
-                <button
-                  type="submit"
-                  className="flex-1 py-2 rounded-lg bg-primary text-white font-medium"
-                >
-                  Lưu thay đổi
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditUser(null)
-                    setModalPos(null)
-                  }}
-                  className="flex-1 py-2 rounded-lg bg-secondary"
-                >
-                  Hủy
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-      {isEditUserOpen && editUser && window.innerWidth >= 1024 && (
+{isEditUserOpen && editUser && (
   <EditUserModal
     user={editUser}
     onClose={() => {
