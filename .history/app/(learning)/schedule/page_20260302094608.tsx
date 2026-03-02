@@ -442,9 +442,9 @@ useEffect(() => {
 // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [])
   return (
-    <div className="flex flex-col lg:flex-row gap-4 sm:gap-5 lg:gap-5 xl:gap-8 min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-4 sm:p-5 lg:p-6 xl:p-8">
+    <div className="flex flex-col xl:flex-row gap-4 sm:gap-5 lg:gap-5 xl:gap-6 min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-4 sm:p-5 lg:p-6 xl:p-8">
       {/* Main Content - Kanban Board */}
-      <div className="flex-1 w-full lg:flex-1 min-w-0">
+      <div className="flex-1 w-full xl:flex-[2] min-w-0">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}

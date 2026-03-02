@@ -882,15 +882,11 @@ useEffect(() => {
             />
             {/* Modal */}
             <motion.div
-              initial={{ y: '-100%', opacity: 0 }}
+              initial={{ y: '100%', opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              exit={{ y: '-100%', opacity: 0 }}
+              exit={{ y: '100%', opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className={`fixed z-50 w-full md:w-full md:max-w-lg md:left-1/2 md:-translate-x-1/2 md:top-0 ${
-                editingItem.status === 'todo' ? 'top-0 left-1/2 -translate-x-1/2' :
-                editingItem.status === 'in-progress' ? 'top-1/3 left-1/2 -translate-x-1/2' :
-                'top-2/3 left-1/2 -translate-x-1/2'
-              }`}
+              className="fixed bottom-0 left-0 right-0 lg:bottom-auto lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 z-50 w-full lg:w-full lg:max-w-lg"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="bg-card dark:bg-slate-900 border-2 border-border dark:border-slate-800 rounded-t-3xl lg:rounded-2xl p-4 sm:p-6 shadow-2xl max-h-[90vh] overflow-y-auto">

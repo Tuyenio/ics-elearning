@@ -882,26 +882,22 @@ useEffect(() => {
             />
             {/* Modal */}
             <motion.div
-              initial={{ y: '-100%', opacity: 0 }}
+              initial={{ y: '100%', opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              exit={{ y: '-100%', opacity: 0 }}
+              exit={{ y: '100%', opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className={`fixed z-50 w-full md:w-full md:max-w-lg md:left-1/2 md:-translate-x-1/2 md:top-0 ${
-                editingItem.status === 'todo' ? 'top-0 left-1/2 -translate-x-1/2' :
-                editingItem.status === 'in-progress' ? 'top-1/3 left-1/2 -translate-x-1/2' :
-                'top-2/3 left-1/2 -translate-x-1/2'
-              }`}
+              className="fixed bottom-0 left-0 right-0 lg:bottom-auto lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 z-50 w-full lg:w-full lg:max-w-lg"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="bg-card dark:bg-slate-900 border-2 border-border dark:border-slate-800 rounded-t-3xl lg:rounded-2xl p-4 sm:p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-                <div className="flex items-center justify-between mb-4 sm:mb-6 gap-2">
+              <div className="flex items-center justify-between mb-4 sm:mb-6 gap-2">
                 <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground dark:text-white flex-1">Chỉnh sửa công việc</h2>
                 <button onClick={() => setEditingItem(null)} className="p-2 hover:bg-secondary dark:hover:bg-slate-800 rounded-lg flex-shrink-0">
                   <X size={20} className="text-muted-foreground" />
                 </button>
-                </div>
+              </div>
 
-                <div className="space-y-3 sm:space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-foreground dark:text-white mb-1 sm:mb-2">Tiêu đề</label>
                   <input
@@ -1004,7 +1000,6 @@ useEffect(() => {
                     Cập nhật
                   </button>
                 </div>
-              </div>
               </div>
             </motion.div>
           </>

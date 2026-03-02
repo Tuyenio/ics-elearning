@@ -886,10 +886,10 @@ useEffect(() => {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: '-100%', opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className={`fixed z-50 w-full md:w-full md:max-w-lg md:left-1/2 md:-translate-x-1/2 md:top-0 ${
-                editingItem.status === 'todo' ? 'top-0 left-1/2 -translate-x-1/2' :
-                editingItem.status === 'in-progress' ? 'top-1/3 left-1/2 -translate-x-1/2' :
-                'top-2/3 left-1/2 -translate-x-1/2'
+              className={`fixed top-0 z-50 w-full lg:w-full lg:max-w-lg ${
+                editingItem.status === 'todo' ? 'left-0 right-auto' :
+                editingItem.status === 'in-progress' ? 'left-1/2 right-auto -translate-x-1/2' :
+                'right-0 left-auto'
               }`}
               onClick={(e) => e.stopPropagation()}
             >

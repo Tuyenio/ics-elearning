@@ -442,7 +442,7 @@ useEffect(() => {
 // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [])
   return (
-    <div className="flex flex-col lg:flex-row gap-4 sm:gap-5 lg:gap-5 xl:gap-8 min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-4 sm:p-5 lg:p-6 xl:p-8">
+    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 xl:gap-8 min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-4 sm:p-5 lg:p-6 xl:p-8">
       {/* Main Content - Kanban Board */}
       <div className="flex-1 w-full lg:flex-1 min-w-0">
         <motion.div
@@ -481,7 +481,7 @@ useEffect(() => {
         </motion.div>
 
         {/* Kanban Columns */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 lg:gap-5 xl:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 lg:gap-6">
           {(['todo', 'in-progress', 'completed'] as const).map((status) => (
             <motion.div
               key={status}
@@ -506,14 +506,14 @@ useEffect(() => {
               </div>
 
               {/* Cards Container */}
-              <div className="flex flex-col gap-3 h-[350px] sm:h-[400px] lg:h-[480px] xl:h-[520px] bg-card/50 dark:bg-slate-800/30 rounded-2xl p-3 sm:p-4 lg:p-5 border border-border/50 dark:border-slate-700/50 overflow-y-auto">
+              <div className="flex flex-col gap-3 flex-1 min-h-[350px] sm:min-h-[450px] lg:min-h-[550px] bg-card/50 dark:bg-slate-800/30 rounded-2xl p-3 sm:p-4 lg:p-5 border border-border/50 dark:border-slate-700/50 overflow-y-auto">
                 {getFilteredItems(status).map((item, idx) => (
                   <motion.div
                     key={item.id ?? `schedule-${idx}`}  
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: idx * 0.05 }}
-                    className={`p-2 sm:p-3 lg:p-4 bg-card dark:bg-slate-900 border-2 border-border dark:border-slate-700 rounded-xl cursor-pointer group hover:shadow-lg transition-all ${getStatusColor(status)}`}
+                    className={`p-3 sm:p-4 bg-card dark:bg-slate-900 border-2 border-border dark:border-slate-700 rounded-xl cursor-pointer group hover:shadow-lg transition-all ${getStatusColor(status)}`}
                   >
                     <div className="flex items-start justify-between gap-2 mb-2 sm:mb-3 lg:mb-4">
                       <div className={`px-2 py-1 rounded-full text-xs sm:text-xs font-semibold flex items-center gap-1 flex-shrink-0 ${getTypeColor(item.type)}`}>
@@ -522,14 +522,13 @@ useEffect(() => {
                       </div>
                       <button 
                         onClick={() => setEditingItem(item)}
-                        className="p-1 opacity-100 xl:opacity-0 xl:group-hover:opacity-100 transition-opacity flex-shrink-0"
-                        title="Chỉnh sửa"
+                        className="p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <MoreVertical size={16} className="text-muted-foreground" />
                       </button>
                     </div>
 
-                    <h3 className="font-semibold text-foreground dark:text-white mb-1 sm:mb-2 line-clamp-2 text-xs sm:text-sm">
+                    <h3 className="font-semibold text-foreground dark:text-white mb-2 line-clamp-2 text-sm">
                       {item.title}
                     </h3>
 
@@ -539,7 +538,7 @@ useEffect(() => {
 
                     {/* Deadline Status Warning Badge */}
                     {isDateNotToday(item.dueDate) && item.status !== 'completed' && (
-                      <div className={`mb-1 sm:mb-2 px-2 py-1 rounded text-xs font-medium ${getDeadlineStatus(item.dueDate).color}`}>
+                      <div className={`mb-2 sm:mb-3 px-2 py-1 rounded text-xs font-medium ${getDeadlineStatus(item.dueDate).color}`}>
                         {getDeadlineStatus(item.dueDate).status === 'overdue' && 'Quá hạn'}
                         {getDeadlineStatus(item.dueDate).status === 'tomorrow' && 'Ngày mai'}
                         {getDeadlineStatus(item.dueDate).status === 'soon' && 'Sắp đến - ' + getDeadlineStatus(item.dueDate).label}
@@ -547,7 +546,7 @@ useEffect(() => {
                       </div>
                     )}
 
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 text-xs text-muted-foreground dark:text-slate-500 mb-1 sm:mb-2">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 text-xs text-muted-foreground dark:text-slate-500 mb-2 sm:mb-3">
                       <div className="flex items-center gap-1">
                         <Calendar size={13} className="flex-shrink-0" />
                         <span className="truncate">{item.dueDate ? new Date(item.dueDate + 'T00:00:00').toLocaleDateString('vi-VN') : 'Chưa đặt'}</span>
@@ -562,12 +561,12 @@ useEffect(() => {
                     </div>
 
                     {item.important && (
-                      <div className="mb-1 sm:mb-2 px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded text-xs font-medium">
+                      <div className="mb-2 sm:mb-3 px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded text-xs font-medium">
                         🔔 Quan trọng
                       </div>
                     )}
 
-                    <div className="flex gap-2 pt-1 sm:pt-2 border-t border-border dark:border-slate-700">
+                    <div className="flex gap-2 pt-2 sm:pt-3 border-t border-border dark:border-slate-700">
                       {status !== 'completed' && (
                     <button
                       onClick={() => {
@@ -621,10 +620,10 @@ useEffect(() => {
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2 }}
-        className="w-full lg:w-80 xl:w-96 space-y-4 sm:space-y-5 lg:space-y-6"
+        className="w-full lg:w-96 space-y-4 sm:space-y-5 lg:space-y-6"
       >
         {/* Calendar */}
-        <div className="bg-card dark:bg-slate-900/60 border border-border dark:border-slate-800 rounded-2xl p-4 sm:p-5 lg:p-6 shadow-lg max-h-[280px] overflow-y-auto">
+        <div className="bg-card dark:bg-slate-900/60 border border-border dark:border-slate-800 rounded-2xl p-4 sm:p-5 lg:p-6 shadow-lg">
           <div className="flex items-center justify-between mb-4 lg:mb-6 gap-2">
             <button 
               onClick={prevMonth}
@@ -690,38 +689,38 @@ useEffect(() => {
         </div>
 
         {/* Your Task */}
-        <div className="bg-card dark:bg-slate-900/60 border border-border dark:border-slate-800 rounded-2xl p-3 sm:p-4 lg:p-5 shadow-lg">
-          <h3 className="text-xs sm:text-sm lg:text-base font-bold text-foreground dark:text-white mb-2 sm:mb-2 lg:mb-3">Công việc của bạn</h3>
-          <div className="flex flex-wrap gap-1.5">
-            <span className="px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-full text-xs font-medium">
+        <div className="bg-card dark:bg-slate-900/60 border border-border dark:border-slate-800 rounded-2xl p-4 sm:p-5 lg:p-6 shadow-lg">
+          <h3 className="text-sm sm:text-base lg:text-lg font-bold text-foreground dark:text-white mb-3 lg:mb-4">Công việc của bạn</h3>
+          <div className="flex flex-wrap gap-2">
+            <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-full text-xs font-medium">
               🎯 Sắp tới
             </span>
-            <span className="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-full text-xs font-medium">
+            <span className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-full text-xs font-medium">
               🚀 Sản phẩm
             </span>
           </div>
         </div>
 
         {/* Upcoming Activity */}
-        <div className="bg-card dark:bg-slate-900/60 border border-border dark:border-slate-800 rounded-2xl p-3 sm:p-4 lg:p-5 shadow-lg max-h-[220px] overflow-hidden flex flex-col">
-          <h3 className="text-xs sm:text-sm lg:text-base font-bold text-foreground dark:text-white mb-2 sm:mb-2 lg:mb-3 flex-shrink-0">Hoạt động sắp tới</h3>
-          <div className="space-y-1.5 sm:space-y-2 overflow-y-auto flex-1">
+        <div className="bg-card dark:bg-slate-900/60 border border-border dark:border-slate-800 rounded-2xl p-4 sm:p-5 lg:p-6 shadow-lg">
+          <h3 className="text-sm sm:text-base lg:text-lg font-bold text-foreground dark:text-white mb-3 lg:mb-4">Hoạt động sắp tới</h3>
+          <div className="space-y-2 sm:space-y-3 max-h-[300px] lg:max-h-[400px] overflow-y-auto">
             {scheduleItems
               .filter(item => item.status !== 'completed')
               .sort((a, b) => (a.time ?? '').localeCompare(b.time ?? ''))
               .slice(0, 5)
               .map((item, idx) => (
-                <div key={item.id ?? `upcoming-${idx}`} className="flex items-start gap-2 pb-1.5 border-b border-border/50 dark:border-slate-700/50 last:border-b-0">
-                  <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1 ${
+                <div key={item.id ?? `upcoming-${idx}`} className="flex items-center gap-3 pb-3 border-b border-border/50 dark:border-slate-700/50 last:border-b-0">
+                  <div className={`w-2 h-2 rounded-full ${
                     item.status === 'todo' ? 'bg-red-500' :
                     item.status === 'in-progress' ? 'bg-yellow-500' :
                     'bg-green-500'
                   }`} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-muted-foreground dark:text-slate-400 leading-none">
+                    <p className="text-xs font-semibold text-muted-foreground dark:text-slate-400">
                       {item.time}
                     </p>
-                    <p className="text-xs text-foreground dark:text-white truncate">
+                    <p className="text-xs sm:text-sm text-foreground dark:text-white truncate">
                       {item.title}
                     </p>
                   </div>
@@ -871,37 +870,28 @@ useEffect(() => {
       {/* Edit Modal */}
       <AnimatePresence>
         {editingItem && (
-          <>
-            {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4"
+            onClick={() => setEditingItem(null)}
+          >
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
-              onClick={() => setEditingItem(null)}
-            />
-            {/* Modal */}
-            <motion.div
-              initial={{ y: '-100%', opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: '-100%', opacity: 0 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className={`fixed z-50 w-full md:w-full md:max-w-lg md:left-1/2 md:-translate-x-1/2 md:top-0 ${
-                editingItem.status === 'todo' ? 'top-0 left-1/2 -translate-x-1/2' :
-                editingItem.status === 'in-progress' ? 'top-1/3 left-1/2 -translate-x-1/2' :
-                'top-2/3 left-1/2 -translate-x-1/2'
-              }`}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-card dark:bg-slate-900 border-2 border-border dark:border-slate-800 rounded-2xl p-4 sm:p-6 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="bg-card dark:bg-slate-900 border-2 border-border dark:border-slate-800 rounded-t-3xl lg:rounded-2xl p-4 sm:p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-                <div className="flex items-center justify-between mb-4 sm:mb-6 gap-2">
+              <div className="flex items-center justify-between mb-4 sm:mb-6 gap-2">
                 <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground dark:text-white flex-1">Chỉnh sửa công việc</h2>
                 <button onClick={() => setEditingItem(null)} className="p-2 hover:bg-secondary dark:hover:bg-slate-800 rounded-lg flex-shrink-0">
                   <X size={20} className="text-muted-foreground" />
                 </button>
-                </div>
+              </div>
 
-                <div className="space-y-3 sm:space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-foreground dark:text-white mb-1 sm:mb-2">Tiêu đề</label>
                   <input
@@ -1005,9 +995,8 @@ useEffect(() => {
                   </button>
                 </div>
               </div>
-              </div>
             </motion.div>
-          </>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

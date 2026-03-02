@@ -886,14 +886,14 @@ useEffect(() => {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: '-100%', opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className={`fixed z-50 w-full md:w-full md:max-w-lg md:left-1/2 md:-translate-x-1/2 md:top-0 ${
-                editingItem.status === 'todo' ? 'top-0 left-1/2 -translate-x-1/2' :
-                editingItem.status === 'in-progress' ? 'top-1/3 left-1/2 -translate-x-1/2' :
-                'top-2/3 left-1/2 -translate-x-1/2'
+              className={`fixed top-0 z-50 w-full lg:w-full lg:max-w-lg xl:top-auto xl:left-1/2 xl:-translate-x-1/2 xl:top-1/2 xl:-translate-y-1/2 ${
+                editingItem.status === 'todo' ? 'left-0 right-auto xl:left-1/2 xl:-translate-x-1/2' :
+                editingItem.status === 'in-progress' ? 'left-1/2 right-auto -translate-x-1/2 xl:left-1/2 xl:-translate-x-1/2' :
+                'right-0 left-auto xl:left-1/2 xl:-translate-x-1/2'
               }`}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="bg-card dark:bg-slate-900 border-2 border-border dark:border-slate-800 rounded-t-3xl lg:rounded-2xl p-4 sm:p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+              <div className="bg-card dark:bg-slate-900 border-2 border-border dark:border-slate-800 rounded-b-3xl lg:rounded-2xl p-4 sm:p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-4 sm:mb-6 gap-2">
                 <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground dark:text-white flex-1">Chỉnh sửa công việc</h2>
                 <button onClick={() => setEditingItem(null)} className="p-2 hover:bg-secondary dark:hover:bg-slate-800 rounded-lg flex-shrink-0">

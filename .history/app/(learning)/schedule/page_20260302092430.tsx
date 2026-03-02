@@ -522,7 +522,7 @@ useEffect(() => {
                       </div>
                       <button 
                         onClick={() => setEditingItem(item)}
-                        className="p-1 opacity-100 xl:opacity-0 xl:group-hover:opacity-100 transition-opacity flex-shrink-0"
+                        className="p-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex-shrink-0"
                         title="Chỉnh sửa"
                       >
                         <MoreVertical size={16} className="text-muted-foreground" />
@@ -871,37 +871,28 @@ useEffect(() => {
       {/* Edit Modal */}
       <AnimatePresence>
         {editingItem && (
-          <>
-            {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4"
+            onClick={() => setEditingItem(null)}
+          >
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
-              onClick={() => setEditingItem(null)}
-            />
-            {/* Modal */}
-            <motion.div
-              initial={{ y: '-100%', opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: '-100%', opacity: 0 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className={`fixed z-50 w-full md:w-full md:max-w-lg md:left-1/2 md:-translate-x-1/2 md:top-0 ${
-                editingItem.status === 'todo' ? 'top-0 left-1/2 -translate-x-1/2' :
-                editingItem.status === 'in-progress' ? 'top-1/3 left-1/2 -translate-x-1/2' :
-                'top-2/3 left-1/2 -translate-x-1/2'
-              }`}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-card dark:bg-slate-900 border-2 border-border dark:border-slate-800 rounded-2xl p-4 sm:p-6 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="bg-card dark:bg-slate-900 border-2 border-border dark:border-slate-800 rounded-t-3xl lg:rounded-2xl p-4 sm:p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-                <div className="flex items-center justify-between mb-4 sm:mb-6 gap-2">
+              <div className="flex items-center justify-between mb-4 sm:mb-6 gap-2">
                 <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground dark:text-white flex-1">Chỉnh sửa công việc</h2>
                 <button onClick={() => setEditingItem(null)} className="p-2 hover:bg-secondary dark:hover:bg-slate-800 rounded-lg flex-shrink-0">
                   <X size={20} className="text-muted-foreground" />
                 </button>
-                </div>
+              </div>
 
-                <div className="space-y-3 sm:space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-foreground dark:text-white mb-1 sm:mb-2">Tiêu đề</label>
                   <input
@@ -1005,9 +996,8 @@ useEffect(() => {
                   </button>
                 </div>
               </div>
-              </div>
             </motion.div>
-          </>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

@@ -442,9 +442,9 @@ useEffect(() => {
 // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [])
   return (
-    <div className="flex flex-col lg:flex-row gap-4 sm:gap-5 lg:gap-5 xl:gap-8 min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-4 sm:p-5 lg:p-6 xl:p-8">
+    <div className="flex flex-col xl:flex-row gap-4 sm:gap-5 lg:gap-5 xl:gap-4 min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-4 sm:p-5 lg:p-6 xl:p-6">
       {/* Main Content - Kanban Board */}
-      <div className="flex-1 w-full lg:flex-1 min-w-0">
+      <div className="flex-1 w-full xl:flex-[3] min-w-0">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -481,7 +481,7 @@ useEffect(() => {
         </motion.div>
 
         {/* Kanban Columns */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 lg:gap-5 xl:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 lg:gap-4 xl:gap-4">
           {(['todo', 'in-progress', 'completed'] as const).map((status) => (
             <motion.div
               key={status}
@@ -506,7 +506,7 @@ useEffect(() => {
               </div>
 
               {/* Cards Container */}
-              <div className="flex flex-col gap-3 h-[350px] sm:h-[400px] lg:h-[480px] xl:h-[520px] bg-card/50 dark:bg-slate-800/30 rounded-2xl p-3 sm:p-4 lg:p-5 border border-border/50 dark:border-slate-700/50 overflow-y-auto">
+              <div className="flex flex-col gap-3 h-[350px] sm:h-[400px] lg:h-[480px] xl:h-[500px] bg-card/50 dark:bg-slate-800/30 rounded-2xl p-3 sm:p-4 lg:p-5 border border-border/50 dark:border-slate-700/50 overflow-y-auto">
                 {getFilteredItems(status).map((item, idx) => (
                   <motion.div
                     key={item.id ?? `schedule-${idx}`}  
@@ -621,7 +621,7 @@ useEffect(() => {
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2 }}
-        className="w-full lg:w-80 xl:w-96 space-y-4 sm:space-y-5 lg:space-y-6"
+        className="w-full md:w-full lg:w-64 xl:w-80 space-y-4 sm:space-y-5 lg:space-y-5"
       >
         {/* Calendar */}
         <div className="bg-card dark:bg-slate-900/60 border border-border dark:border-slate-800 rounded-2xl p-4 sm:p-5 lg:p-6 shadow-lg max-h-[280px] overflow-y-auto">
